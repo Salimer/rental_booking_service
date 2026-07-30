@@ -1,0 +1,1728 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "JAC Rental Booking Service API",
+        "description": "Standalone microservice handling all rental property booking operations for the JAC platform. Authentication uses Bearer tokens issued by the JAC monolith (Laravel Passport).",
+        "contact": {
+            "email": "dev@jac.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "L5_SWAGGER_CONST_HOST",
+            "description": "Current Environment"
+        }
+    ],
+    "paths": {
+        "/api/v1/bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "List user bookings",
+                "description": "Returns all bookings belonging to the authenticated user, newest first.",
+                "operationId": "daf1d30d180ba251d3a594b8cc06fcc5",
+                "responses": {
+                    "200": {
+                        "description": "List of bookings",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BookingSummary"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bookings/{id}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get booking details",
+                "description": "Returns full details for a specific booking owned by the authenticated user.",
+                "operationId": "e510ab8fc8a07c21f4f5aa7d77eb2cca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookingDetail"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bookings/estimate": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Estimate booking price",
+                "description": "Calculates the total price for a unit over selected dates including per-night breakdown. Does NOT create a booking or hold. Use this when the user is browsing dates before committing.",
+                "operationId": "00a6b4c4a418da02a4f9d0827a8e5c6b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "unit_id",
+                                    "check_in_date",
+                                    "check_out_date"
+                                ],
+                                "properties": {
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "check_in_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-01"
+                                    },
+                                    "check_out_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-04"
+                                    },
+                                    "guests_count": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "currency": {
+                                        "description": "SAR | USD | YER_S | YER_N",
+                                        "type": "string",
+                                        "example": "SAR"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Price estimate breakdown",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PriceEstimate"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date range"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bookings/initiate-payment": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Initiate the payment flow",
+                "description": "Creates a 15-minute date hold on the unit and returns a payment URL. The booking record is only created AFTER the payment gateway confirms payment via the webhook. Call this when the user taps \"Pay Now\".",
+                "operationId": "44c51ba1b12c14e74bb1c4d34c21e0b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "unit_id",
+                                    "check_in_date",
+                                    "check_out_date"
+                                ],
+                                "properties": {
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "check_in_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-01"
+                                    },
+                                    "check_out_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-04"
+                                    },
+                                    "guests_count": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "SAR"
+                                    },
+                                    "guest_name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "guest_phone": {
+                                        "type": "string",
+                                        "example": "+966501234567"
+                                    },
+                                    "guest_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "guest_note": {
+                                        "type": "string",
+                                        "example": "Late check-in please"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment initiation details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "hold_token": {
+                                            "type": "string",
+                                            "example": "HOLD-ABCDE12345XY"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "total_amount": {
+                                            "type": "number",
+                                            "example": 450
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "example": "SAR"
+                                        },
+                                        "payment_url": {
+                                            "type": "string",
+                                            "example": "https://api.example.com/api/v1/payments/initiate?hold_token=HOLD-ABC&amount=450"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bookings/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Cancel a booking",
+                "description": "Cancels a confirmed booking owned by the authenticated user. Push notification is sent to the user via the monolith bridge.",
+                "operationId": "d9764a5646618d284ae2c1f31ece8eb2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Change of plans"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Booking cancelled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Booking cancelled successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot cancel booking in current state"
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/coupons/apply": {
+            "post": {
+                "tags": [
+                    "Coupons"
+                ],
+                "summary": "Validate and apply a coupon code",
+                "description": "Validates the coupon code against the booking amount and returns the discount details.",
+                "operationId": "acd68b67b817c20655d076768252570b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "SAVE20"
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    },
+                                    "org_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Coupon applied successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SAVE20"
+                                        },
+                                        "discount_type": {
+                                            "type": "string",
+                                            "example": "percent"
+                                        },
+                                        "discount_value": {
+                                            "type": "number",
+                                            "example": 20
+                                        },
+                                        "discount_amount": {
+                                            "type": "number",
+                                            "example": 100
+                                        },
+                                        "original_amount": {
+                                            "type": "number",
+                                            "example": 500
+                                        },
+                                        "final_amount": {
+                                            "type": "number",
+                                            "example": 400
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid coupon"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/favourites": {
+            "get": {
+                "tags": [
+                    "Favourites"
+                ],
+                "summary": "List user favourites",
+                "description": "Returns all properties saved to the authenticated user favourites list.",
+                "operationId": "4a819eb9aad19fd2eafd2d41652b5686",
+                "responses": {
+                    "200": {
+                        "description": "List of favourited properties",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FavouriteItem"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Favourites"
+                ],
+                "summary": "Save a property to favourites",
+                "description": "Adds a property to the user favourites. Idempotent.",
+                "operationId": "1e30f16b1e0afdf9f1d15c3889703e7b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_id"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 12
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 34
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Added to favourites"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/favourites/toggle": {
+            "post": {
+                "tags": [
+                    "Favourites"
+                ],
+                "summary": "Toggle favourite status",
+                "description": "Adds if not saved; removes if saved.",
+                "operationId": "02677a2ad530a10ff26e094ad4d8fc94",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "property_id"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 12
+                                    },
+                                    "unit_id": {
+                                        "type": "integer",
+                                        "example": 34
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Toggle result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Added to favourites"
+                                        },
+                                        "is_favourite": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/favourites/{id}": {
+            "delete": {
+                "tags": [
+                    "Favourites"
+                ],
+                "summary": "Remove a favourite by ID",
+                "description": "Deletes a specific favourite record.",
+                "operationId": "6e9a52ba6b0f69bc2498a8fff2a2b792",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Removed from favourites"
+                    },
+                    "404": {
+                        "description": "Favourite not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/countries": {
+            "get": {
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "List active countries",
+                "description": "Returns all countries with active status.",
+                "operationId": "09733c5e02d50907b67f33b56cab072b",
+                "responses": {
+                    "200": {
+                        "description": "List of countries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Country"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cities": {
+            "get": {
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "List cities",
+                "description": "Returns active cities. Filter by country_id.",
+                "operationId": "cd82a2353546bd942448bcf9f1810ff3",
+                "parameters": [
+                    {
+                        "name": "country_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of cities",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/City"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/neighborhoods": {
+            "get": {
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "List neighborhoods",
+                "description": "Returns active neighborhoods. Filter by city_id.",
+                "operationId": "eb8f85eadb733c6ff153af0c3b7380de",
+                "parameters": [
+                    {
+                        "name": "city_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of neighborhoods",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Neighborhood"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Browse active rental properties",
+                "description": "Returns a paginated list of active properties. Supports filtering by city, neighborhood, type, and star rating. No authentication required.",
+                "operationId": "6b260bd627ea9529982b5e2d22043f25",
+                "parameters": [
+                    {
+                        "name": "city_id",
+                        "in": "query",
+                        "description": "Filter by city",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "neighborhood_id",
+                        "in": "query",
+                        "description": "Filter by neighborhood",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type_id",
+                        "in": "query",
+                        "description": "Filter by property type",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "star_rating",
+                        "in": "query",
+                        "description": "Minimum star rating",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 5,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of properties",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_size": {
+                                            "type": "integer",
+                                            "example": 42
+                                        },
+                                        "limit": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "offset": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "properties": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PropertySummary"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{id}": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "summary": "Get property details",
+                "description": "Returns full details for a single property including units, reviews, amenities, and settings.",
+                "operationId": "baec64dd63122f15d66b967ca7d21b08",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Property details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PropertyDetail"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/units/{id}": {
+            "get": {
+                "tags": [
+                    "Units"
+                ],
+                "summary": "Get unit details",
+                "description": "Returns full details for a specific unit including amenities and price rules.",
+                "operationId": "85d6a4febe60b56171f40de3129bd949",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unit details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnitDetail"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unit not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/units/{id}/prices": {
+            "get": {
+                "tags": [
+                    "Units"
+                ],
+                "summary": "Get custom price schedule for a unit",
+                "description": "Returns override/seasonal price records for a given unit within a date range.",
+                "operationId": "04732472c5f21d9cfe8aa3bd2e5477d8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-09-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-09-30"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of price records in the requested period",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PriceRecord"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Units"
+                ],
+                "summary": "Set a custom price for a unit on a specific date",
+                "description": "Creates or updates an override price for a specific date. Used by org managers/staff.",
+                "operationId": "eba4c9ab0b9c7bbd397dd4bde0930bfb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "date",
+                                    "price"
+                                ],
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-25"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 350
+                                    },
+                                    "currency": {
+                                        "description": "SAR | USD | YER_S | YER_N",
+                                        "type": "string",
+                                        "example": "SAR"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Price set successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Price updated successfully"
+                                        },
+                                        "price": {
+                                            "$ref": "#/components/schemas/PriceRecord"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/webhooks/payment-complete": {
+            "post": {
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Payment gateway completion webhook",
+                "description": "Called by monolith payment system after payment succeeds or fails.",
+                "operationId": "997cb0b5cd388a93b334c65ff33eb425",
+                "parameters": [
+                    {
+                        "name": "X-Webhook-Signature",
+                        "in": "header",
+                        "description": "HMAC-SHA256 of payload",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "hold_token",
+                                    "payment_reference",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "hold_token": {
+                                        "type": "string",
+                                        "example": "HOLD-ABCDE12345XY"
+                                    },
+                                    "payment_reference": {
+                                        "type": "string",
+                                        "example": "PAY-9988776655"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "paid"
+                                    },
+                                    "gateway": {
+                                        "type": "string",
+                                        "example": "kuraimi"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed — booking created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "booking_id": {
+                                            "type": "integer",
+                                            "example": 88
+                                        },
+                                        "reference_no": {
+                                            "type": "string",
+                                            "example": "BK-ABCD1234"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Hold not found or payment not paid"
+                    },
+                    "401": {
+                        "description": "Invalid HMAC signature"
+                    },
+                    "500": {
+                        "description": "Internal processing error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BookingDetail": {
+                "description": "Full booking details",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 88
+                    },
+                    "reference_no": {
+                        "type": "string",
+                        "example": "BK-ABCD1234"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "confirmed"
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "example": "paid"
+                    },
+                    "check_in_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-01"
+                    },
+                    "check_out_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-04"
+                    },
+                    "nights_count": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "guests_count": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 450
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "SAR"
+                    },
+                    "guest_name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "guest_phone": {
+                        "type": "string",
+                        "example": "+966501234567"
+                    },
+                    "guest_email": {
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "guest_note": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "property": {
+                        "$ref": "#/components/schemas/PropertySummary"
+                    },
+                    "unit": {
+                        "$ref": "#/components/schemas/UnitSummary"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "BookingSummary": {
+                "description": "Compact booking representation",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 88
+                    },
+                    "reference_no": {
+                        "type": "string",
+                        "example": "BK-ABCD1234"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "confirmed"
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "example": "paid"
+                    },
+                    "check_in_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-01"
+                    },
+                    "check_out_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-04"
+                    },
+                    "nights_count": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "guests_count": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 450
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "SAR"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "City": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "country_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Sanaa"
+                    },
+                    "status": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Country": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Yemen"
+                    },
+                    "status": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "FavouriteItem": {
+                "description": "A saved favourite entry",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "property_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "property": {
+                        "$ref": "#/components/schemas/PropertySummary"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Neighborhood": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Haddah"
+                    },
+                    "status": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "PriceEstimate": {
+                "description": "Price breakdown and total for booking",
+                "properties": {
+                    "unit_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "check_in_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-01"
+                    },
+                    "check_out_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-09-04"
+                    },
+                    "nights_count": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "unit_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 150
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 450
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "SAR"
+                    },
+                    "nightly_breakdown": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "date": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2026-09-01"
+                                },
+                                "price": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 150
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PriceRecord": {
+                "description": "A price rule for a unit",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "priceable_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "priceable_type": {
+                        "type": "string",
+                        "example": "App\\Models\\Unit"
+                    },
+                    "price_type": {
+                        "type": "string",
+                        "example": "default"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "price_sar": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 350
+                    },
+                    "price_usd": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 93
+                    },
+                    "price_yer_s": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 87500
+                    },
+                    "price_yer_n": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 90000
+                    }
+                },
+                "type": "object"
+            },
+            "PropertyDetail": {
+                "description": "Full property details including units, org, and settings",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Sea View Villa"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "type_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "avg_rating": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.5
+                    },
+                    "rating_count": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "star_rating": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "logo": {
+                        "type": "string",
+                        "example": "properties/villa1.jpg",
+                        "nullable": true
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "org": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Royal Stays"
+                            },
+                            "settings": {
+                                "properties": {
+                                    "cancellation_policy": {
+                                        "type": "string",
+                                        "example": "moderate"
+                                    },
+                                    "check_in_time": {
+                                        "type": "string",
+                                        "example": "14:00:00"
+                                    },
+                                    "check_out_time": {
+                                        "type": "string",
+                                        "example": "11:00:00"
+                                    },
+                                    "allow_instant_booking": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "units": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UnitSummary"
+                        }
+                    },
+                    "rules": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PropertySummary": {
+                "description": "Compact property representation returned in list views",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Sea View Villa"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "city_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "type_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "avg_rating": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.5
+                    },
+                    "rating_count": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "star_rating": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "logo": {
+                        "type": "string",
+                        "example": "properties/villa1.jpg",
+                        "nullable": true
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "UnitDetail": {
+                "description": "Full unit details with amenities and price rules",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "property_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chalet 101"
+                    },
+                    "pricing_mode": {
+                        "type": "string",
+                        "example": "nightly"
+                    },
+                    "max_guests": {
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "amenities": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 2
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "WiFi"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "property": {
+                        "$ref": "#/components/schemas/PropertySummary"
+                    }
+                },
+                "type": "object"
+            },
+            "UnitSummary": {
+                "description": "Compact unit representation in property listings",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chalet 101"
+                    },
+                    "max_guests": {
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Passport Bearer token issued by the JAC monolith. Obtain via the monolith /api/v1/auth/login endpoint.",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Properties",
+            "description": "Browse and search rental properties"
+        },
+        {
+            "name": "Units",
+            "description": "Individual bookable units within a property"
+        },
+        {
+            "name": "Bookings",
+            "description": "Create and manage reservations"
+        },
+        {
+            "name": "Coupons",
+            "description": "Apply discount coupons to bookings"
+        },
+        {
+            "name": "Favourites",
+            "description": "User wishlist / saved properties"
+        },
+        {
+            "name": "Locations",
+            "description": "Countries, cities and neighborhoods"
+        },
+        {
+            "name": "Webhooks",
+            "description": "Internal callbacks — e.g. payment gateway notifications"
+        }
+    ]
+}
