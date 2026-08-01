@@ -54,6 +54,69 @@ class UnitService
     }
 
     /**
+     * Get paginated customer units filtered by query parameters.
+     */
+    public function getCustomerUnits(array $filters, int $limit = 10, int $offset = 0): array
+    {
+        $query = Unit::with(['prices', 'amenities', 'property.org', 'property.type', 'property.city', 'property.neighborhood'])
+            ->where('status', 'active');
+
+        if (!empty($filters['rental_type_id'])) {
+            $query->whereHas('property', function ($q) use ($filters) {
+                $q->where('type_id', $filters['rental_type_id']);
+            });
+        }
+
+        if (!empty($filters['max_guests'])) {
+            $query->where('max_guests', '>=', (int) $filters['max_guests']);
+        }
+
+        if (!empty($filters['city_id'])) {
+            $query->whereHas('property', function ($q) use ($filters) {
+                $q->where('city_id', $filters['city_id']);
+            });
+        }
+
+        if (!empty($filters['neighborhood_id'])) {
+            $query->whereHas('property', function ($q) use ($filters) {
+                $q->where('neighborhood_id', $filters['neighborhood_id']);
+            });
+        }
+
+        if (!empty($filters['country_id'])) {
+            $query->whereHas('property.city', function ($q) use ($filters) {
+                $q->where('country_id', $filters['country_id']);
+            });
+        }
+
+        if (!empty($filters['amenity_ids']) && is_array($filters['amenity_ids'])) {
+            $query->whereHas('amenities', function ($q) use ($filters) {
+                $q->whereIn('amenity_id', $filters['amenity_ids']);
+            });
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('property', function ($pq) use ($search) {
+                      $pq->where('title', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $totalSize = $query->count();
+        $units = $query->skip($offset)->take($limit)->get();
+
+        return [
+            'total_size' => $totalSize,
+            'limit' => $limit,
+            'offset' => $offset,
+            'units' => $units,
+        ];
+    }
+
+    /**
      * Get price range schedule for a unit within date boundaries.
      */
     public function getUnitPrices(int $unitId, string $startDate, string $endDate): Collection

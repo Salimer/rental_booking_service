@@ -23,4 +23,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'حجم الملفات المرفقة كبير جداً ويتجاوز الحد المسموح به للم خادم (Post Data Too Large).'
+                ], 413);
+            }
+
+            return back()->with('error', 'حجم الملفات أو الصور المرفقة كبير جداً ويتجاوز الحد المسموح به للم خادم. يرجى اختيار صور بأحجام أصغر وإعادة المحاولة.');
+        });
     })->create();

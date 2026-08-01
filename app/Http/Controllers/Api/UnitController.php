@@ -17,6 +17,28 @@ class UnitController extends Controller
         $this->unitService = $unitService;
     }
 
+    public function index(Request $request)
+    {
+        $limit = (int) $request->query('limit', 10);
+        $offset = (int) $request->query('offset', 0);
+
+        $filters = [
+            'rental_type_id' => $request->query('rental_type_id'),
+            'max_guests' => $request->query('max_guests'),
+            'city_id' => $request->query('rental_city_id') ?? $request->query('city_id'),
+            'neighborhood_id' => $request->query('rental_neighborhood_id') ?? $request->query('neighborhood_id'),
+            'country_id' => $request->query('rental_country_id') ?? $request->query('country_id'),
+            'amenity_ids' => $request->query('amenity_ids'),
+            'min_price' => $request->query('min_price'),
+            'max_price' => $request->query('max_price'),
+            'search' => $request->query('search'),
+        ];
+
+        $result = $this->unitService->getCustomerUnits($filters, $limit, $offset);
+
+        return response()->json($result, 200);
+    }
+
     #[OA\Get(
         path: '/api/v1/units/{id}',
         summary: 'Get unit details',

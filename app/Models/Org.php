@@ -16,6 +16,7 @@ class Org extends Model
         'name_en',
         'code',
         'vendor_id',
+        'dashboard_user_id',
         'module_id',
         'zone_id',
         'city',
@@ -36,6 +37,11 @@ class Org extends Model
     protected $casts = [
         'commission' => 'decimal:2',
     ];
+
+    public function dashboardUser()
+    {
+        return $this->belongsTo(DashboardUser::class, 'dashboard_user_id');
+    }
 
     public function vendor()
     {
@@ -65,6 +71,11 @@ class Org extends Model
     public function properties()
     {
         return $this->hasMany(Property::class, 'org_id');
+    }
+
+    public function units()
+    {
+        return $this->hasManyThrough(Unit::class, Property::class, 'org_id', 'property_id');
     }
 
     public function bookings()

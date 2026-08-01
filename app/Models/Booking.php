@@ -68,7 +68,22 @@ class Booking extends Model
         'expires_at' => 'datetime',
     ];
 
-    protected $appends = ['status_label', 'payment_status_label'];
+    protected $appends = ['status_label', 'payment_status_label', 'total_price', 'booking_code', 'total_nights'];
+
+    public function getTotalPriceAttribute(): float
+    {
+        return (float) (($this->unit_price ?? 0) * ($this->nights_count ?? 1));
+    }
+
+    public function getBookingCodeAttribute(): string
+    {
+        return $this->reference_no ?? (string) $this->id;
+    }
+
+    public function getTotalNightsAttribute(): int
+    {
+        return (int) ($this->nights_count ?? 1);
+    }
 
     public function getStatusLabelAttribute(): string
     {
