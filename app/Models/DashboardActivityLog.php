@@ -28,20 +28,38 @@ class DashboardActivityLog extends Model
         return $this->belongsTo(DashboardUser::class, 'dashboard_user_id');
     }
 
-    public static function log(string $action, ?Model $subject = null, ?array $payload = null): self
+    public static function log(string $action, mixed $subject = null, ?array $payload = null): self
     {
+        if (is_array($subject) && $payload === null) {
+            $payload = $subject;
+            $subject = null;
+        }
+
         $user = session('dashboard_user');
-        $userId = $user ? ($user->id ?? null) : null;
-        $userName = $user ? ($user->name ?? 'زائر') : 'نظام';
-        $userRole = $user ? ($user->role ?? 'system') : 'system';
+        if (is_array($user)) {
+            $userId = $user['id'] ?? null;
+            $userName = $user['name'] ?? 'زائر';
+            $userRole = $user['role'] ?? 'system';
+        } elseif (is_object($user)) {
+            $userId = $user->id ?? null;
+            $userName = $user->name ?? 'زائر';
+            $userRole = $user->role ?? 'system';
+        } else {
+            $userId = null;
+            $userName = 'زائر';
+            $userRole = 'system';
+        }
+
+        $subjectType = ($subject instanceof Model) ? class_basename($subject) : (is_string($subject) ? $subject : null);
+        $subjectId = ($subject instanceof Model) ? $subject->getKey() : null;
 
         return self::create([
             'dashboard_user_id' => $userId,
             'user_name' => $userName,
             'user_role' => $userRole,
             'action' => $action,
-            'subject_type' => $subject ? class_basename($subject) : null,
-            'subject_id' => $subject ? $subject->getKey() : null,
+            'subject_type' => $subjectType,
+            'subject_id' => $subjectId,
             'payload' => $payload,
             'ip_address' => request()->ip(),
         ]);

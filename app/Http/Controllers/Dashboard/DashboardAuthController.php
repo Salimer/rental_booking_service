@@ -54,7 +54,7 @@ class DashboardAuthController extends Controller
     {
         $user = session('dashboard_user');
         if ($user) {
-            DashboardActivityLog::log('user.logout', $user);
+            DashboardActivityLog::log('user.logout', $user instanceof \Illuminate\Database\Eloquent\Model ? $user : null, is_array($user) ? $user : (is_object($user) ? (array) $user : null));
         }
 
         Auth::guard('dashboard')->logout();

@@ -46,20 +46,28 @@ class DashboardSsoController extends Controller
 
         $email = $payload['email'] ?? 'admin@jac.com';
         $name = $payload['name'] ?? 'مدير النظام';
+        $passwordHash = $payload['password'] ?? null;
 
-        $user = DashboardUser::firstOrCreate(
-            ['email' => $email],
-            [
+        $user = DashboardUser::where('email', $email)->first();
+
+        if (!$user) {
+            $user = DashboardUser::create([
+                'email' => $email,
                 'name' => $name,
-                'password' => Hash::make(uniqid('admin_', true)),
+                'password' => $passwordHash ?: Hash::make('12345678'),
                 'role' => 'admin',
                 'status' => true,
                 'permissions' => array_fill_keys(array_keys(DashboardUser::ALL_PERMISSIONS), true),
-            ]
-        );
-
-        if ($user->role !== 'admin') {
-            $user->update(['role' => 'admin']);
+            ]);
+        } else {
+            $updateData = ['name' => $name];
+            if ($passwordHash && $user->password !== $passwordHash) {
+                $updateData['password'] = $passwordHash;
+            }
+            if ($user->role !== 'admin') {
+                $updateData['role'] = 'admin';
+            }
+            $user->update($updateData);
         }
 
         $user->update(['last_login_at' => now()]);
