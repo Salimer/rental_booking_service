@@ -59,8 +59,19 @@
                 @forelse($orgs as $org)
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark fs-6">{{ $org->name_ar }}</div>
-                            <small class="text-muted">رمز المنظمة: {{ $org->code ?? '#'.$org->id }}</small>
+                            <div class="d-flex align-items-center gap-2">
+                                @if($org->logo_url)
+                                    <img src="{{ $org->logo_url }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($org->name_ar) }}&background=0d6efd&color=fff';" class="rounded border p-1" style="width: 40px; height: 40px; object-fit: cover; background: #fff;">
+                                @else
+                                    <div class="rounded bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                        <i class="ti ti-building-store"></i>
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="fw-bold text-dark fs-6">{{ $org->name_ar }}</div>
+                                    <small class="text-muted">رمز المنظمة: {{ $org->code ?? '#'.$org->id }}</small>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             @if($org->dashboardUser)

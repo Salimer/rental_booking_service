@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Traits\LocalizedModelTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Unit extends Model
 {
     protected $table = 'units';
 
-    use LocalizedModelTrait;
+    use LocalizedModelTrait, SoftDeletes;
 
     protected $fillable = [
         'property_id',
@@ -30,6 +31,23 @@ class Unit extends Model
         'max_guests' => 'integer',
         'quantity' => 'integer',
     ];
+
+    public function getImageUrlsAttribute(): array
+    {
+        $imgs = $this->images;
+        if (!is_array($imgs)) {
+            return [];
+        }
+        return array_map(function ($img) {
+            if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+                return $img;
+            }
+            if (str_starts_with($img, 'storage/')) {
+                return asset($img);
+            }
+            return asset('storage/rental_unit/' . $img);
+        }, $imgs);
+    }
 
     public function prices()
     {

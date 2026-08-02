@@ -15,6 +15,31 @@
         }
     ],
     "paths": {
+        "/api/v1/amenities": {
+            "get": {
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "List rental amenities",
+                "description": "Returns all active amenities. Filter by type_id.",
+                "operationId": "8962c418d4f42cdcf3cdf9a80d243420",
+                "parameters": [
+                    {
+                        "name": "type_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of amenities"
+                    }
+                }
+            }
+        },
         "/api/v1/bookings": {
             "get": {
                 "tags": [
@@ -841,6 +866,21 @@
                     },
                     "404": {
                         "description": "Property not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/types": {
+            "get": {
+                "tags": [
+                    "Types"
+                ],
+                "summary": "List property types",
+                "description": "Returns all active rental property types.",
+                "operationId": "294c29e77d2424d2754db38dac833443",
+                "responses": {
+                    "200": {
+                        "description": "List of property types"
                     }
                 }
             }
@@ -1723,6 +1763,14 @@
         {
             "name": "Webhooks",
             "description": "Internal callbacks — e.g. payment gateway notifications"
+        },
+        {
+            "name": "Amenities",
+            "description": "Amenities"
+        },
+        {
+            "name": "Types",
+            "description": "Types"
         }
     ]
 }

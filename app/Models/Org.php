@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Traits\LocalizedModelTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Org extends Model
 {
     protected $table = 'orgs';
 
-    use LocalizedModelTrait;
+    use LocalizedModelTrait, SoftDeletes;
 
     protected $fillable = [
         'name_ar',
@@ -37,6 +38,34 @@ class Org extends Model
     protected $casts = [
         'commission' => 'decimal:2',
     ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+            return $this->logo;
+        }
+        if (str_starts_with($this->logo, 'storage/')) {
+            return asset($this->logo);
+        }
+        return asset('storage/rental_org/' . $this->logo);
+    }
+
+    public function getCoverPhotoUrlAttribute(): ?string
+    {
+        if (!$this->cover_photo) {
+            return null;
+        }
+        if (str_starts_with($this->cover_photo, 'http://') || str_starts_with($this->cover_photo, 'https://')) {
+            return $this->cover_photo;
+        }
+        if (str_starts_with($this->cover_photo, 'storage/')) {
+            return asset($this->cover_photo);
+        }
+        return asset('storage/rental_org/cover/' . $this->cover_photo);
+    }
 
     public function dashboardUser()
     {

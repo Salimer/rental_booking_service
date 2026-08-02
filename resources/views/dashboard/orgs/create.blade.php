@@ -11,7 +11,7 @@
             <h5 class="fw-bold mb-3"><i class="ti ti-building-store me-2 text-primary"></i>بيانات المنظمة والمزود</h5>
             <hr class="text-muted opacity-25 mb-4">
 
-            <form action="{{ route('dashboard.orgs.store') }}" method="POST">
+            <form action="{{ route('dashboard.orgs.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="row g-3 mb-4">
@@ -22,6 +22,14 @@
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">اسم المنظمة (بالإنجليزي)</label>
                         <input type="text" name="name_en" class="form-control" placeholder="Royal Beach Hotel">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">شعار المنظمة (Logo)</label>
+                        <input type="file" name="logo" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">صورة الغلاف (Cover Photo)</label>
+                        <input type="file" name="cover_photo" class="form-control" accept="image/*">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">رقم هاتف المنظمة</label>

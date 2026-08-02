@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Traits\LocalizedModelTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Property extends Model
 {
     protected $table = 'properties';
 
-    use LocalizedModelTrait;
+    use LocalizedModelTrait, SoftDeletes;
 
     protected $fillable = [
         'org_id',
@@ -46,6 +47,37 @@ class Property extends Model
         'is_featured' => 'boolean',
         'star_rating' => 'integer',
     ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+            return $this->logo;
+        }
+        if (str_starts_with($this->logo, 'storage/')) {
+            return asset($this->logo);
+        }
+        return asset('storage/rental_property/' . $this->logo);
+    }
+
+    public function getGalleryUrlsAttribute(): array
+    {
+        $imgs = $this->images;
+        if (!is_array($imgs)) {
+            return [];
+        }
+        return array_map(function ($img) {
+            if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+                return $img;
+            }
+            if (str_starts_with($img, 'storage/')) {
+                return asset($img);
+            }
+            return asset('storage/rental_property/gallery/' . $img);
+        }, $imgs);
+    }
 
     public function getCancellationPolicyAttribute()
     {

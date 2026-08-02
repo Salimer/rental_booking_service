@@ -23,6 +23,7 @@
                             <th>الاسم بالعربي</th>
                             <th>الاسم بالإنجليزي</th>
                             <th>الأيقونة</th>
+                            <th class="text-end">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="fs-7">
@@ -31,9 +32,53 @@
                                 <td class="fw-bold">{{ $t->name_ar }}</td>
                                 <td>{{ $t->name_en }}</td>
                                 <td><i class="{{ $t->icon ?? 'ti-home' }} fs-5"></i></td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#editTypeModal{{ $t->id }}">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                    <form action="{{ route('dashboard.settings.types.delete', $t->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذا التصنيف؟');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Edit Type Modal -->
+                                    <div class="modal fade text-start" id="editTypeModal{{ $t->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form action="{{ route('dashboard.settings.types.update', $t->id) }}" method="POST">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title fw-bold">تعديل التصنيف: {{ $t->name_ar }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body row g-3">
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">اسم التصنيف (بالعربي)</label>
+                                                            <input type="text" name="name_ar" class="form-control" value="{{ $t->name_ar }}" required>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">اسم التصنيف (بالإنجليزي)</label>
+                                                            <input type="text" name="name_en" class="form-control" value="{{ $t->name_en }}">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">رمز الأيقونة (Icon class)</label>
+                                                            <input type="text" name="icon" class="form-control" value="{{ $t->icon }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                                        <button type="submit" class="btn btn-primary-custom">حفظ التغييرات</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-center py-3 text-muted">لا توجد تصنيفات مضافة.</td></tr>
+                            <tr><td colspan="4" class="text-center py-3 text-muted">لا توجد تصنيفات مضافة.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -57,6 +102,7 @@
                         <tr>
                             <th>اسم المرفق</th>
                             <th>بالإنجليزي</th>
+                            <th class="text-end">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="fs-7">
@@ -64,9 +110,53 @@
                             <tr>
                                 <td class="fw-bold">{{ $am->name_ar }}</td>
                                 <td>{{ $am->name_en }}</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#editAmenityModal{{ $am->id }}">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                    <form action="{{ route('dashboard.settings.amenities.delete', $am->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذا المرفق؟');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Edit Amenity Modal -->
+                                    <div class="modal fade text-start" id="editAmenityModal{{ $am->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form action="{{ route('dashboard.settings.amenities.update', $am->id) }}" method="POST">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title fw-bold">تعديل المرفق: {{ $am->name_ar }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body row g-3">
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">اسم المرفق (بالعربي)</label>
+                                                            <input type="text" name="name_ar" class="form-control" value="{{ $am->name_ar }}" required>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">اسم المرفق (بالإنجليزي)</label>
+                                                            <input type="text" name="name_en" class="form-control" value="{{ $am->name_en }}">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold fs-7">رمز الأيقونة</label>
+                                                            <input type="text" name="icon" class="form-control" value="{{ $am->icon }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                                        <button type="submit" class="btn btn-primary-custom">حفظ التغييرات</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="2" class="text-center py-3 text-muted">لا توجد مرافق.</td></tr>
+                            <tr><td colspan="3" class="text-center py-3 text-muted">لا توجد مرافق.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -93,13 +183,51 @@
             </div>
 
             <!-- Countries List -->
-            <div class="mb-4">
+            <div class="mb-4 border-bottom pb-3">
                 <h6 class="fw-bold text-muted mb-2"><i class="ti ti-world me-1"></i>الدول المسجلة:</h6>
                 <div class="d-flex flex-wrap gap-2">
                     @forelse($countries as $c)
-                        <span class="badge bg-success-subtle text-success p-2 fs-7">
-                            <i class="ti ti-flag me-1"></i>{{ $c->name_ar }} ({{ $c->cities_count }} مدن)
-                        </span>
+                        <div class="badge bg-success-subtle text-success p-2 fs-7 d-flex align-items-center gap-2">
+                            <span><i class="ti ti-flag me-1"></i>{{ $c->name_ar }} ({{ $c->cities_count }} مدن)</span>
+                            <button type="button" class="btn p-0 border-0 text-success" data-bs-toggle="modal" data-bs-target="#editCountryModal{{ $c->id }}" title="تعديل">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                            <form action="{{ route('dashboard.settings.countries.delete', $c->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذه الدولة؟');">
+                                @csrf
+                                <button type="submit" class="btn p-0 border-0 text-danger" title="حذف">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Edit Country Modal -->
+                        <div class="modal fade text-start text-dark" id="editCountryModal{{ $c->id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ route('dashboard.settings.countries.update', $c->id) }}" method="POST">
+                                        @csrf
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fw-bold">تعديل الدولة: {{ $c->name_ar }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold fs-7">اسم الدولة (بالعربي)</label>
+                                                <input type="text" name="name_ar" class="form-control" value="{{ $c->name_ar }}" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold fs-7">اسم الدولة (بالإنجليزي)</label>
+                                                <input type="text" name="name_en" class="form-control" value="{{ $c->name_en }}">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                            <button type="submit" class="btn btn-primary-custom">حفظ التغييرات</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @empty
                         <span class="text-muted fs-7">لا توجد دول مسجلة بعد.</span>
                     @endforelse
@@ -110,10 +238,52 @@
             <h6 class="fw-bold text-muted mb-2"><i class="ti ti-building-community me-1"></i>المدن والأحياء التابعة:</h6>
             <div class="row g-3">
                 @forelse($cities as $city)
-                    <div class="col-md-4">
-                        <div class="border rounded-3 p-3 bg-light-subtle">
-                            <h6 class="fw-bold mb-2 text-dark"><i class="ti ti-building-community me-1"></i>{{ $city->name_ar }}</h6>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="border rounded-3 p-3 bg-light-subtle h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="ti ti-building-community me-1 text-primary"></i>{{ $city->name_ar }}</h6>
+                                <div class="d-inline-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" data-bs-toggle="modal" data-bs-target="#editCityModal{{ $city->id }}" title="تعديل المدينة">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                    <form action="{{ route('dashboard.settings.cities.delete', $city->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذه المدينة بكل أحيائها؟');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="حذف المدينة">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                             <span class="badge bg-secondary-subtle text-dark fs-7 mb-2">{{ $city->neighborhoods_count }} أحياء تابعة</span>
+
+                            <!-- Edit City Modal -->
+                            <div class="modal fade text-start" id="editCityModal{{ $city->id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('dashboard.settings.cities.update', $city->id) }}" method="POST">
+                                            @csrf
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fw-bold">تعديل المدينة: {{ $city->name_ar }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body row g-3">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold fs-7">اسم المدينة (بالعربي)</label>
+                                                    <input type="text" name="name_ar" class="form-control" value="{{ $city->name_ar }}" required>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold fs-7">اسم المدينة (بالإنجليزي)</label>
+                                                    <input type="text" name="name_en" class="form-control" value="{{ $city->name_en }}">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                                <button type="submit" class="btn btn-primary-custom">حفظ التغييرات</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -142,6 +312,10 @@
                     <div class="col-12">
                         <label class="form-label fw-semibold fs-7">اسم التصنيف (بالإنجليزي)</label>
                         <input type="text" name="name_en" class="form-control" placeholder="Hotels / Apartments">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold fs-7">رمز الأيقونة</label>
+                        <input type="text" name="icon" class="form-control" placeholder="ti-home">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -176,6 +350,35 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
                     <button type="submit" class="btn btn-primary-custom">إضافة المرفق</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Country -->
+<div class="modal fade" id="addCountryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('dashboard.settings.countries.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">إضافة دولة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold fs-7">اسم الدولة (بالعربي)</label>
+                        <input type="text" name="name_ar" class="form-control" required placeholder="اليمن / المملكة العربية السعودية">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold fs-7">اسم الدولة (بالإنجليزي)</label>
+                        <input type="text" name="name_en" class="form-control" placeholder="Yemen / Saudi Arabia">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary-custom">إضافة الدولة</button>
                 </div>
             </form>
         </div>
@@ -239,33 +442,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
                     <button type="submit" class="btn btn-primary-custom">إضافة الحي</button>
-                </div>
-            </form>
-        </div>
-    </div>
-<!-- Modal: Add Country -->
-<div class="modal fade" id="addCountryModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('dashboard.settings.countries.store') }}" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة دولة جديدة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">اسم الدولة (بالعربي)</label>
-                        <input type="text" name="name_ar" class="form-control" required placeholder="اليمن / المملكة العربية السعودية">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">اسم الدولة (بالإنجليزي)</label>
-                        <input type="text" name="name_en" class="form-control" placeholder="Yemen / Saudi Arabia">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary-custom">إضافة الدولة</button>
                 </div>
             </form>
         </div>
