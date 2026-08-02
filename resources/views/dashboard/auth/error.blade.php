@@ -6,10 +6,11 @@
     <title>{{ $errorTitle ?? 'تنبيه الأمان' }} - JAC</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/dashboard-colors.css') }}">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background: #F4F6F9;
+            background: var(--color-bg-auth);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,9 +18,9 @@
             padding: 20px;
         }
         .error-card {
-            background: #FFFFFF;
+            background: var(--color-card-bg);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: var(--shadow-error);
             width: 100%;
             max-width: 480px;
             padding: 40px;
@@ -29,8 +30,8 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: #FFEBEB;
-            color: #DC3545;
+            background: var(--color-danger-bg);
+            color: var(--color-danger-text);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -47,7 +48,7 @@
         <p class="text-muted fs-6 mb-4">{{ $errorMessage ?? 'لم نتمكن من التحقق من توقيع الجلسة الانتقالية.' }}</p>
 
         <div class="d-grid gap-2">
-            <a href="{{ route('dashboard.login') }}" class="btn btn-primary btn-lg rounded-3 fs-6" style="background-color: #005555; border-color: #005555;">
+            <a href="{{ route('dashboard.login') }}" class="btn btn-brand-primary btn-lg rounded-3 fs-6">
                 تسجيل الدخول المباشر
             </a>
         </div>

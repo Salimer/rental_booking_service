@@ -12,24 +12,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.net/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- Google Fonts Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Central Theme Colors -->
+    <link rel="stylesheet" href="{{ asset('css/dashboard-colors.css') }}">
 
     <style>
         :root {
-            --primary-color: #F9B233;
-            --primary-hover: #E09E20;
-            --primary-dark: #0F172A;
-            --bg-light: #F8FAFC;
-            --sidebar-bg: #0F172A;
-            --sidebar-text: #94A3B8;
-            --sidebar-active-bg: #F9B233;
-            --sidebar-active-text: #0F172A;
-            --card-border: #E2E8F0;
+            --primary-color: var(--color-brand-gold);
+            --primary-hover: var(--color-brand-gold-hover);
+            --primary-dark: var(--color-brand-navy);
+            --bg-light: var(--color-bg-app);
+            --sidebar-bg: var(--color-sidebar-bg);
+            --sidebar-text: var(--color-sidebar-text);
+            --sidebar-active-bg: var(--color-sidebar-active-bg);
+            --sidebar-active-text: var(--color-sidebar-active-text);
+            --card-border: var(--color-card-border);
         }
 
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-light);
-            color: #1E293B;
+            background-color: var(--color-bg-app);
+            color: var(--color-text-main);
             overflow-x: hidden;
         }
 
@@ -44,13 +46,13 @@
             color: var(--sidebar-text);
             transition: all 0.3s ease;
             z-index: 1040;
-            box-shadow: -4px 0 20px rgba(15, 23, 42, 0.2);
+            box-shadow: var(--shadow-sidebar);
         }
 
         #sidebar .brand-header {
             padding: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--color-sidebar-header-bg);
+            border-bottom: 1px solid var(--color-sidebar-border);
         }
 
         #sidebar .nav-link {
@@ -67,15 +69,15 @@
         }
 
         #sidebar .nav-link:hover {
-            color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.07);
+            color: var(--color-text-white);
+            background: var(--color-sidebar-hover-bg);
         }
 
         #sidebar .nav-link.active {
             color: var(--sidebar-active-text);
             background: var(--sidebar-active-bg);
             font-weight: 700;
-            box-shadow: 0 4px 14px rgba(249, 178, 51, 0.35);
+            box-shadow: var(--shadow-gold);
         }
 
         #sidebar .nav-link i {
@@ -86,7 +88,7 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.35);
+            color: var(--color-sidebar-category-text);
             padding: 16px 24px 6px;
             font-weight: 700;
         }
@@ -102,11 +104,11 @@
 
         /* Header Bar */
         .top-navbar {
-            background: #FFFFFF;
+            background: var(--color-card-bg);
             height: 70px;
             padding: 0 30px;
-            border-bottom: 1px solid #E2E8F0;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+            border-bottom: 1px solid var(--color-card-border);
+            box-shadow: var(--shadow-card);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -116,26 +118,26 @@
         }
 
         .user-badge {
-            background: #FEF3C7;
-            color: #92400E;
+            background: var(--color-warning-bg);
+            color: var(--color-warning-text);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 700;
-            border: 1px solid #FDE68A;
+            border: 1px solid var(--color-warning-border);
         }
 
         /* Cards & UI Elements */
         .card-custom {
-            border: 1px solid #E2E8F0;
+            border: 1px solid var(--color-card-border);
             border-radius: 12px;
-            background: #FFFFFF;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+            background: var(--color-card-bg);
+            box-shadow: var(--shadow-card);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .card-custom:hover {
-            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+            box-shadow: var(--shadow-card-hover);
         }
 
         .stat-icon {
@@ -158,7 +160,7 @@
         .btn-primary-custom {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            color: #0F172A;
+            color: var(--color-brand-navy);
             font-weight: 700;
             border-radius: 8px;
             padding: 8px 18px;
@@ -167,7 +169,7 @@
         .btn-primary-custom:hover {
             background-color: var(--primary-hover);
             border-color: var(--primary-hover);
-            color: #0F172A;
+            color: var(--color-brand-navy);
         }
 
         /* Pagination Styling */
@@ -178,8 +180,8 @@
         }
         .pagination .page-item .page-link {
             border-radius: 6px !important;
-            color: #0F172A;
-            border-color: #E2E8F0;
+            color: var(--color-brand-navy);
+            border-color: var(--color-card-border);
             padding: 6px 12px;
             font-size: 14px;
             font-weight: 600;
@@ -187,7 +189,7 @@
         .pagination .page-item.active .page-link {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            color: #0F172A;
+            color: var(--color-brand-navy);
             font-weight: 700;
         }
         .pagination svg, nav svg {
@@ -219,7 +221,7 @@
     <aside id="sidebar">
         <div class="brand-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-                <div style="background: var(--primary-color); color: #0F172A; width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(249, 178, 51, 0.35);" class="d-flex align-items-center justify-content-center fw-bold fs-4">
+                <div style="background: var(--primary-color); color: var(--color-brand-navy); width: 40px; height: 40px; border-radius: 10px; box-shadow: var(--shadow-gold);" class="d-flex align-items-center justify-content-center fw-bold fs-4">
                     JAC
                 </div>
                 <div>

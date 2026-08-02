@@ -6,7 +6,7 @@
 @section('content')
 
 <!-- Header Welcome Banner -->
-<div class="card-custom p-4 mb-4" style="background: linear-gradient(135deg, #0A1E1E 0%, #005555 100%); color: #fff;">
+<div class="card-custom brand-welcome-card p-4 mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <h4 class="fw-bold mb-1">أهلاً بك، {{ $user->name }} 👋</h4>

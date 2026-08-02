@@ -1,0 +1,150 @@
+/**
+ * Rental Service Dashboard Central Theme & Palette System
+ * Primary Brand Identity: JAC Gold (#F9B233)
+ * All colors across views revolve around Gold and warm complementary tones.
+ */
+
+:root {
+    /* Brand Gold Spectrum (Core Brand Identity) */
+    --color-brand-gold: #F9B233;            /* Main Brand Gold */
+    --color-brand-gold-hover: #E09E20;      /* Darker Gold for hover states */
+    --color-brand-gold-deep: #C68208;       /* Deep Gold / Amber for strong accents & icons */
+    --color-brand-gold-dark: #18130B;       /* Warm Dark Bronze for rich backgrounds & sidebar */
+    --color-brand-gold-mid-dark: #3D2B10;   /* Medium Dark Warm Bronze */
+    --color-brand-gold-light: #FFF8E7;      /* Warm Champagne Gold Tint background */
+    --color-brand-gold-subtle: #FEF3C7;     /* Soft Gold Badge / Soft Highlight */
+    --color-brand-gold-border: #FDE68A;     /* Soft Gold Border */
+
+    /* Structural Surface & Layout Backgrounds */
+    --color-bg-app: #FAF9F6;               /* Warm Off-White Page Background */
+    --color-bg-auth: #FAF6F0;              /* Warm Neutral Auth Background */
+    --color-card-bg: #FFFFFF;
+    --color-card-border: #E8E2D5;          /* Warm Subtle Card Border */
+    --color-border-input: #E2E8F0;
+
+    /* Sidebar Palette (Warm Dark Bronze Frame with Gold Highlights) */
+    --color-sidebar-bg: #18130B;           /* Deep Charcoal Bronze */
+    --color-sidebar-text: #A39B8B;
+    --color-sidebar-hover-bg: rgba(249, 178, 51, 0.08); /* Gold hover tint */
+    --color-sidebar-active-bg: var(--color-brand-gold);
+    --color-sidebar-active-text: #18130B;  /* Contrast text on gold */
+    --color-sidebar-border: rgba(249, 178, 51, 0.12);
+    --color-sidebar-header-bg: rgba(249, 178, 51, 0.04);
+    --color-sidebar-category-text: rgba(249, 178, 51, 0.5);
+    --shadow-sidebar: -4px 0 20px rgba(24, 19, 11, 0.25);
+
+    /* Text & Typography Colors */
+    --color-text-main: #262118;            /* Warm Dark Text */
+    --color-text-muted: #8C8273;          /* Warm Muted Text */
+    --color-text-dark: #18130B;
+    --color-text-white: #FFFFFF;
+
+    /* Status & Badge Colors */
+    --color-warning-bg: #FEF3C7;
+    --color-warning-text: #92400E;
+    --color-warning-border: #FDE68A;
+
+    --color-danger-bg: #FFEBEB;
+    --color-danger-text: #DC3545;
+
+    /* Gradients & Shadows (Rich Golden Warmth) */
+    --gradient-brand-header: linear-gradient(135deg, #18130B 0%, #3D2B10 50%, #7A5310 100%);
+    --gradient-brand-gold: linear-gradient(135deg, #F9B233 0%, #E09E20 100%);
+    --shadow-card: 0 4px 14px rgba(24, 19, 11, 0.04);
+    --shadow-card-hover: 0 6px 20px rgba(24, 19, 11, 0.08);
+    --shadow-gold: 0 4px 16px rgba(249, 178, 51, 0.4);
+    --shadow-auth: 0 10px 40px rgba(24, 19, 11, 0.25);
+    --shadow-error: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* -------------------------------------------------------------
+   Bootstrap Overrides to Enforce Brand Gold Theme Across Views
+   ------------------------------------------------------------- */
+
+.btn-primary, .btn-primary-custom, .btn-brand-primary {
+    background-color: var(--color-brand-gold) !important;
+    border-color: var(--color-brand-gold) !important;
+    color: var(--color-text-dark) !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(249, 178, 51, 0.25);
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+.btn-primary-custom:hover, .btn-brand-primary:hover {
+    background-color: var(--color-brand-gold-hover) !important;
+    border-color: var(--color-brand-gold-hover) !important;
+    color: var(--color-text-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--color-brand-gold-deep) !important;
+    border-color: var(--color-brand-gold) !important;
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background-color: var(--color-brand-gold) !important;
+    border-color: var(--color-brand-gold) !important;
+    color: var(--color-text-dark) !important;
+}
+
+.text-primary {
+    color: var(--color-brand-gold-deep) !important;
+}
+
+.bg-primary-subtle {
+    background-color: var(--color-brand-gold-light) !important;
+    color: var(--color-brand-gold-deep) !important;
+}
+
+.border-primary {
+    border-color: var(--color-brand-gold-border) !important;
+}
+
+.btn-light {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--color-card-border) !important;
+    color: var(--color-text-main) !important;
+}
+
+.btn-light:hover {
+    background-color: var(--color-brand-gold-light) !important;
+    color: var(--color-brand-gold-deep) !important;
+}
+
+/* Helper Utilities for Dashboard Views */
+.brand-welcome-card {
+    background: var(--gradient-brand-header) !important;
+    color: var(--color-text-white) !important;
+    border: 1px solid var(--color-sidebar-border);
+}
+
+.org-avatar-icon {
+    background: var(--color-brand-gold-light) !important;
+    color: var(--color-brand-gold-deep) !important;
+    border: 1px solid var(--color-brand-gold-border) !important;
+}
+
+.badge-user-status {
+    background: var(--color-warning-bg) !important;
+    color: var(--color-warning-text) !important;
+    border: 1px solid var(--color-warning-border) !important;
+}
+
+.btn-gold-dark {
+    background-color: var(--color-brand-gold-deep) !important;
+    border-color: var(--color-brand-gold-deep) !important;
+    color: var(--color-text-white) !important;
+    font-weight: 700;
+}
+
+.btn-gold-dark:hover {
+    background-color: var(--color-brand-gold-hover) !important;
+    border-color: var(--color-brand-gold-hover) !important;
+    color: var(--color-text-dark) !important;
+}
+
+.icon-circle-danger {
+    background: var(--color-danger-bg) !important;
+    color: var(--color-danger-text) !important;
+}

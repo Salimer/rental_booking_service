@@ -9,7 +9,7 @@
 <div class="card-custom p-4 mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3">
-            <div style="background: #E6F0F0; color: #005555; width: 60px; height: 60px; border-radius: 12px;" class="d-flex align-items-center justify-content-center fw-bold fs-3">
+            <div style="width: 60px; height: 60px; border-radius: 12px;" class="org-avatar-icon d-flex align-items-center justify-content-center fw-bold fs-3">
                 <i class="ti ti-building-store"></i>
             </div>
             <div>

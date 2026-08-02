@@ -6,10 +6,11 @@
     <title>تسجيل الدخول - نظام التأجير JAC</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/dashboard-colors.css') }}">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #0A1E1E 0%, #005555 100%);
+            background: var(--gradient-brand-header);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,16 +18,16 @@
             padding: 20px;
         }
         .login-card {
-            background: #FFFFFF;
+            background: var(--color-card-bg);
             border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow-auth);
             width: 100%;
             max-width: 440px;
             padding: 40px;
         }
         .brand-logo {
-            background: #005555;
-            color: #FFFFFF;
+            background: var(--color-brand-gold);
+            color: var(--color-text-dark);
             width: 60px;
             height: 60px;
             border-radius: 16px;
@@ -36,20 +37,20 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            box-shadow: 0 4px 15px rgba(0,85,85,0.4);
+            box-shadow: var(--shadow-gold);
         }
         .btn-submit {
-            background: #005555;
+            background: var(--color-brand-gold);
             border: none;
-            color: #fff;
+            color: var(--color-text-dark);
             font-weight: 700;
             padding: 12px;
             border-radius: 10px;
             transition: all 0.2s;
         }
         .btn-submit:hover {
-            background: #004444;
-            color: #fff;
+            background: var(--color-brand-gold-hover);
+            color: var(--color-text-dark);
         }
     </style>
 </head>
