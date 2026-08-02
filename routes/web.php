@@ -30,6 +30,9 @@ Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('/orgs/{orgId}/staff/create', [DashboardController::class, 'staffCreate'])->name('staff.create');
         Route::post('/orgs/{orgId}/staff/store', [DashboardController::class, 'staffStore'])->name('staff.store');
         Route::post('/staff/{id}/toggle-status', [DashboardController::class, 'staffToggleStatus'])->name('staff.toggle-status');
+        Route::post('/staff/{id}/impersonate', [DashboardController::class, 'staffImpersonate'])->name('staff.impersonate');
+        Route::post('/impersonate/stop', [DashboardController::class, 'impersonateStop'])->name('impersonate.stop');
+        Route::post('/staff/{id}/reset-password', [DashboardController::class, 'staffResetPassword'])->name('staff.reset-password');
 
         Route::post('/properties/store', [DashboardController::class, 'propertyStore'])->name('properties.store');
         Route::get('/properties/{id}/edit', [DashboardController::class, 'propertyEdit'])->name('properties.edit');

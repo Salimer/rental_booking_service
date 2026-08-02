@@ -349,6 +349,82 @@ class DashboardController extends Controller
         return back()->with('success', 'تم تغيير حالة الحساب بنجاح.');
     }
 
+    public function staffImpersonate($id)
+    {
+        $user = $this->currentUser();
+        if (!$user->isAdmin()) {
+            abort(403, 'التصفح كـ موظف متاح حصرياً لمدير النظام.');
+        }
+
+        $targetUser = DashboardUser::findOrFail($id);
+
+        if ($targetUser->id === $user->id) {
+            return back()->with('error', 'أنت بالفعل مسجل الدخول بهذا الحساب.');
+        }
+
+        session([
+            'impersonator_id' => $user->id,
+            'dashboard_user_id' => $targetUser->id,
+            'dashboard_user' => $targetUser,
+        ]);
+        Auth::guard('dashboard')->login($targetUser);
+
+        DashboardActivityLog::log('staff.impersonated', $targetUser, [
+            'impersonated_by' => $user->id,
+            'target_name' => $targetUser->name,
+        ]);
+
+        return redirect()->route('dashboard.home')
+            ->with('success', 'أنت الآن تتصفح النظام بحساب: ' . $targetUser->name);
+    }
+
+    public function impersonateStop()
+    {
+        $impersonatorId = session('impersonator_id');
+        if (!$impersonatorId) {
+            return redirect()->route('dashboard.home');
+        }
+
+        $adminUser = DashboardUser::findOrFail($impersonatorId);
+
+        session()->forget('impersonator_id');
+        session([
+            'dashboard_user_id' => $adminUser->id,
+            'dashboard_user' => $adminUser,
+        ]);
+        Auth::guard('dashboard')->login($adminUser);
+
+        DashboardActivityLog::log('staff.impersonate_stopped', $adminUser, [
+            'restored_admin_id' => $adminUser->id,
+        ]);
+
+        return redirect()->route('dashboard.home')
+            ->with('success', 'تم إلغاء التصفح المؤقت والعودة بحساب مدير النظام.');
+    }
+
+    public function staffResetPassword(Request $request, $id)
+    {
+        $user = $this->currentUser();
+        if (!$user->isAdmin()) {
+            abort(403, 'إعادة تعيين كلمة المرور متاح حصرياً لمدير النظام.');
+        }
+
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $targetUser = DashboardUser::findOrFail($id);
+        $targetUser->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        DashboardActivityLog::log('staff.password_reset_by_admin', $targetUser, [
+            'reset_by' => $user->id,
+        ]);
+
+        return back()->with('success', 'تم إعادة تعيين كلمة المرور بنجاح للمستخدم: ' . $targetUser->name);
+    }
+
     public function propertyStore(Request $request)
     {
         $user = $this->currentUser();

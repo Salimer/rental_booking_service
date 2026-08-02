@@ -385,6 +385,21 @@
 
         <!-- Page Content -->
         <main class="p-4 flex-grow-1">
+            @if(session('impersonator_id'))
+                <div class="alert alert-warning border border-warning shadow-sm rounded-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2 py-2 px-3">
+                    <div class="d-flex align-items-center gap-2 text-dark fw-bold">
+                        <i class="ti ti-user-check fs-4 text-warning"></i>
+                        <span>أنت الآن تتصفح النظام مؤقتاً بحساب: <u class="text-primary">{{ session('dashboard_user')->name ?? 'المستخدم' }}</u> ({{ session('dashboard_user')->email ?? '' }})</span>
+                    </div>
+                    <form action="{{ route('dashboard.impersonate.stop') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-dark fw-semibold">
+                            <i class="ti ti-logout-2 me-1"></i> العودة لحساب مدير النظام
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
                     <i class="ti ti-circle-check me-2 fs-5"></i> {{ session('success') }}

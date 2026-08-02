@@ -48,6 +48,15 @@ class DashboardCrudTest extends TestCase
         ])->from(route('dashboard.settings.index'));
     }
 
+    protected function actAsUser(DashboardUser $user)
+    {
+        \Illuminate\Support\Facades\Auth::guard('dashboard')->login($user);
+        return $this->withSession([
+            'dashboard_user' => $user,
+            'dashboard_user_id' => $user->id,
+        ]);
+    }
+
     public function test_org_crud_and_images_and_deletion()
     {
         Storage::fake('public');
@@ -317,5 +326,61 @@ class DashboardCrudTest extends TestCase
         $response = $this->actAsAdmin()->get(route('dashboard.finance.org', $org->id));
         $response->assertStatus(200);
         $response->assertSee('ORG-FIN');
+    }
+
+    public function test_admin_can_impersonate_and_stop_impersonation()
+    {
+        $admin = $this->adminUser;
+        $owner = DashboardUser::create([
+            'name' => 'Owner Impersonate Test',
+            'email' => 'owner_imp_' . uniqid() . '@test.com',
+            'password' => Hash::make('password123'),
+            'role' => 'owner',
+            'status' => true,
+        ]);
+
+        // Non-admin cannot impersonate
+        $res = $this->actAsUser($owner)->post(route('dashboard.staff.impersonate', $admin->id));
+        $res->assertStatus(403);
+
+        // Admin impersonates owner
+        $res = $this->actAsAdmin()->post(route('dashboard.staff.impersonate', $owner->id));
+        $res->assertRedirect(route('dashboard.home'));
+        $this->assertEquals($owner->id, session('dashboard_user_id'));
+        $this->assertEquals($admin->id, session('impersonator_id'));
+
+        // Stop impersonating
+        $res = $this->post(route('dashboard.impersonate.stop'));
+        $res->assertRedirect(route('dashboard.home'));
+        $this->assertEquals($admin->id, session('dashboard_user_id'));
+        $this->assertNull(session('impersonator_id'));
+    }
+
+    public function test_admin_can_reset_staff_password()
+    {
+        $owner = DashboardUser::create([
+            'name' => 'Owner Reset Password Test',
+            'email' => 'owner_reset_' . uniqid() . '@test.com',
+            'password' => Hash::make('password123'),
+            'role' => 'owner',
+            'status' => true,
+        ]);
+
+        // Non-admin cannot reset password
+        $res = $this->actAsUser($owner)->post(route('dashboard.staff.reset-password', $owner->id), [
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+        $res->assertStatus(403);
+
+        // Admin resets password
+        $res = $this->actAsAdmin()->post(route('dashboard.staff.reset-password', $owner->id), [
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+        $res->assertSessionHasNoErrors();
+
+        $owner->refresh();
+        $this->assertTrue(Hash::check('newpassword123', $owner->password));
     }
 }

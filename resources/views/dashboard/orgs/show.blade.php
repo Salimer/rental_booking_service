@@ -390,13 +390,60 @@
                                 </td>
                                 <td>{{ $s->last_login_at ? $s->last_login_at->diffForHumans() : 'لم يدخل بعد' }}</td>
                                 <td>
-                                    @if($user->isAdmin() && !$s->isOwner())
-                                        <form action="{{ route('dashboard.staff.toggle-status', $s->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                                {{ $s->status ? 'تعطيل' : 'تفعيل' }}
+                                    @if($user->isAdmin())
+                                        <div class="d-flex gap-1 align-items-center">
+                                            @if($s->id !== $user->id)
+                                                <form action="{{ route('dashboard.staff.impersonate', $s->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="تصفح النظام بحساب هذا الموظف">
+                                                        <i class="ti ti-user-check me-1"></i> دخول كـ
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ $s->id }}" title="تغيير كلمة المرور">
+                                                <i class="ti ti-key me-1"></i> كلمة المرور
                                             </button>
-                                        </form>
+
+                                            @if(!$s->isOwner())
+                                                <form action="{{ route('dashboard.staff.toggle-status', $s->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        {{ $s->status ? 'تعطيل' : 'تفعيل' }}
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+
+                                        <!-- Reset Password Modal -->
+                                        <div class="modal fade text-start" id="resetPasswordModal{{ $s->id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form action="{{ route('dashboard.staff.reset-password', $s->id) }}" method="POST">
+                                                        @csrf
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title fw-bold">إعادة تعيين كلمة المرور - {{ $s->name }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p class="text-muted fs-7 mb-3">سيتم تعيين كلمة مرور جديدة للمستخدم دون الحاجة لمعرفة كلمة المرور القديمة.</p>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold fs-7">كلمة المرور الجديدة *</label>
+                                                                <input type="password" name="password" class="form-control" required minlength="6" placeholder="******">
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold fs-7">تأكيد كلمة المرور الجديدة *</label>
+                                                                <input type="password" name="password_confirmation" class="form-control" required minlength="6" placeholder="******">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                                                            <button type="submit" class="btn btn-primary-custom">حفظ كلمة المرور الجديدة</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
                                     @endif
                                 </td>
                             </tr>
@@ -411,6 +458,39 @@
 
     <!-- Tab 4: Info & Settings -->
     <div class="tab-pane fade" id="info-content">
+        @if($org->dashboardUser)
+            <div class="card border border-primary-subtle bg-primary-subtle p-3 rounded-3 mb-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="ti ti-user-star"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">حساب مالك المنظمة (Owner Account)</h6>
+                            <div class="fs-7 text-muted">
+                                <span class="me-3">الاسم: <strong class="text-dark">{{ $org->dashboardUser->name }}</strong></span>
+                                <span class="me-3">البريد: <strong class="text-dark">{{ $org->dashboardUser->email }}</strong></span>
+                                <span>الهاتف: <strong class="text-dark">{{ $org->dashboardUser->phone ?? 'غير محدد' }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if($user->isAdmin())
+                        <div class="d-flex gap-2">
+                            <form action="{{ route('dashboard.staff.impersonate', $org->dashboardUser->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-primary fw-semibold btn-sm">
+                                    <i class="ti ti-user-check me-1"></i> تصفح كـ مالك المنظمة
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-dark fw-semibold btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ $org->dashboardUser->id }}">
+                                <i class="ti ti-key me-1"></i> إعادة تعيين كلمة المرور
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         <div class="card-custom p-4">
             <h5 class="fw-bold mb-3">تعديل بيانات المنظمة</h5>
             <form action="{{ route('dashboard.orgs.update', $org->id) }}" method="POST" enctype="multipart/form-data">
