@@ -44,9 +44,16 @@ class DashboardSsoController extends Controller
             ], 403);
         }
 
-        $email = $payload['email'] ?? 'admin@jac.com';
+        $email = $payload['email'] ?? null;
         $name = $payload['name'] ?? 'مدير النظام';
         $passwordHash = $payload['password'] ?? null;
+
+        if (empty($email) || empty($passwordHash)) {
+            return response()->view('dashboard.auth.error', [
+                'errorTitle' => 'بيانات التوثيق غير مكتملة',
+                'errorMessage' => 'رمز المصادقة لا يحتوي على بيانات البريد أو كلمة المرور المطلوبة للانتقال.',
+            ], 400);
+        }
 
         $user = DashboardUser::where('email', $email)->first();
 
@@ -54,16 +61,16 @@ class DashboardSsoController extends Controller
             $user = DashboardUser::create([
                 'email' => $email,
                 'name' => $name,
-                'password' => $passwordHash ?: Hash::make('12345678'),
+                'password' => $passwordHash,
                 'role' => 'admin',
                 'status' => true,
                 'permissions' => array_fill_keys(array_keys(DashboardUser::ALL_PERMISSIONS), true),
             ]);
         } else {
-            $updateData = ['name' => $name];
-            if ($passwordHash && $user->password !== $passwordHash) {
-                $updateData['password'] = $passwordHash;
-            }
+            $updateData = [
+                'name' => $name,
+                'password' => $passwordHash,
+            ];
             if ($user->role !== 'admin') {
                 $updateData['role'] = 'admin';
             }
