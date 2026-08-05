@@ -67,6 +67,34 @@ class UnitController extends Controller
         }
     }
 
+    public function checkAvailability($id, Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'check_in_date' => 'required|date',
+            'check_out_date' => 'required|date|after:check_in_date',
+            'mode' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            /** @var \App\Services\BookingService $bookingService */
+            $bookingService = app(\App\Services\BookingService::class);
+            $result = $bookingService->checkAvailability(
+                (int) $id,
+                $request->input('check_in_date'),
+                $request->input('check_out_date'),
+                $request->input('mode')
+            );
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
     #[OA\Get(
         path: '/api/v1/units/{id}/prices',
         summary: 'Get custom price schedule for a unit',

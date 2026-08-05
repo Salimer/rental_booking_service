@@ -616,6 +616,31 @@ class DashboardController extends Controller
         return back()->with('success', 'تم حذف العقار ووحداته التابعة بنجاح.');
     }
 
+    public function unitCreate(Request $request)
+    {
+        $user = $this->currentUser();
+        if (!$user->hasPermission('manage_units')) {
+            abort(403);
+        }
+
+        $propertyId = $request->query('property_id');
+        $unit = new Unit();
+        if ($propertyId) {
+            $property = Property::findOrFail($propertyId);
+            if (!$user->isAdmin() && (int)$property->org_id !== (int)$user->org_id) {
+                abort(403);
+            }
+            $unit->property_id = (int)$propertyId;
+        }
+
+        $properties = $user->isAdmin() ? Property::all() : Property::where('org_id', $user->org_id)->get();
+        $allAmenities = Amenity::all();
+        $defaultPrice = null;
+        $isCreating = true;
+
+        return view('dashboard.units.edit', compact('unit', 'properties', 'allAmenities', 'defaultPrice', 'user', 'isCreating'));
+    }
+
     public function unitStore(Request $request)
     {
         $user = $this->currentUser();
@@ -627,6 +652,8 @@ class DashboardController extends Controller
             'property_id' => 'required|exists:properties,id',
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
             'pricing_mode' => 'required|in:per_night,per_hour,per_slot',
             'max_guests' => 'required|integer|min:1',
             'quantity' => 'required|integer|min:1',
@@ -660,6 +687,8 @@ class DashboardController extends Controller
             'property_id' => $property->id,
             'name_ar' => $data['name_ar'],
             'name_en' => $data['name_en'] ?? $data['name_ar'],
+            'description_ar' => $data['description_ar'] ?? null,
+            'description_en' => $data['description_en'] ?? null,
             'pricing_mode' => $data['pricing_mode'],
             'max_guests' => $data['max_guests'],
             'quantity' => $data['quantity'],
@@ -689,7 +718,8 @@ class DashboardController extends Controller
 
         DashboardActivityLog::log('unit.created', $unit);
 
-        return back()->with('success', 'تم إضافة وحدة الإيواء وتسجيل أسعار العملات والصور والمرافق بنجاح.');
+        return redirect()->route('dashboard.orgs.show', $property->org_id)
+            ->with('success', 'تم إضافة وحدة الإيواء وتسجيل أسعار العملات والصور والمرافق بنجاح.');
     }
 
     public function unitEdit($id)
@@ -704,8 +734,9 @@ class DashboardController extends Controller
         $properties = $user->isAdmin() ? Property::all() : Property::where('org_id', $user->org_id)->get();
         $allAmenities = Amenity::all();
         $defaultPrice = $unit->prices->firstWhere('price_type', 'default');
+        $isCreating = false;
 
-        return view('dashboard.units.edit', compact('unit', 'properties', 'allAmenities', 'defaultPrice', 'user'));
+        return view('dashboard.units.edit', compact('unit', 'properties', 'allAmenities', 'defaultPrice', 'user', 'isCreating'));
     }
 
     public function unitUpdate(Request $request, $id)

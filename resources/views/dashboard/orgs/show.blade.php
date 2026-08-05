@@ -101,9 +101,9 @@
                             <a href="{{ route('dashboard.properties.edit', $prop->id) }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="ti ti-edit me-1"></i> تعديل العقار
                             </a>
-                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addUnitModal{{ $prop->id }}">
+                            <a href="{{ route('dashboard.units.create', ['property_id' => $prop->id]) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="ti ti-plus me-1"></i> إضافة وحدة إيواء
-                            </button>
+                            </a>
                             <form action="{{ route('dashboard.properties.delete', $prop->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت تأكد من رغبتك في حذف هذا العقار وجميع وحداته؟');">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -192,106 +192,6 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add Unit Modal for this Property -->
-                <div class="modal fade" id="addUnitModal{{ $prop->id }}" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <form action="{{ route('dashboard.units.store') }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <input type="hidden" name="property_id" value="{{ $prop->id }}">
-
-                                <div class="modal-header">
-                                    <h5 class="modal-title fw-bold">إضافة وحدة جديدة إلى {{ $prop->title_ar }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold fs-7">اسم الوحدة (بالعربي) *</label>
-                                        <input type="text" name="name_ar" class="form-control" required placeholder="جناح ملكي - رقم 101">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold fs-7">اسم الوحدة (بالإنجليزي)</label>
-                                        <input type="text" name="name_en" class="form-control" placeholder="Royal Suite #101">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold fs-7">طريقة التسعير *</label>
-                                        <select name="pricing_mode" class="form-select" required>
-                                            <option value="per_night">بالليلة (Per Night)</option>
-                                            <option value="per_hour">بالساعة (Per Hour)</option>
-                                            <option value="per_slot">بالفترة (Per Slot)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold fs-7">أقصى عدد ضيوف *</label>
-                                        <input type="number" name="max_guests" class="form-control" value="2" min="1" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-semibold fs-7">عدد الوحدات المتاحة (Quantity) *</label>
-                                        <input type="number" name="quantity" class="form-control" value="1" min="1" required>
-                                    </div>
-
-                                    <!-- 4 Supported Currencies Pricing Section -->
-                                    <div class="col-12 border-top pt-3 mt-2">
-                                        <h6 class="fw-bold text-primary mb-2"><i class="ti ti-report-money me-1"></i>تسعير العملات المدعومة</h6>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-semibold fs-7">ريال سعودي (SAR) *</label>
-                                        <input type="number" step="0.01" name="price_sar" class="form-control" required placeholder="250.00">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-semibold fs-7">ريال يمني (شمال) YER</label>
-                                        <input type="number" step="0.01" name="price_yer_n" class="form-control" placeholder="35000.00">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-semibold fs-7">ريال يمني (جنوب) YER</label>
-                                        <input type="number" step="0.01" name="price_yer_s" class="form-control" placeholder="110000.00">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-semibold fs-7">دولار أمريكي (USD)</label>
-                                        <input type="number" step="0.01" name="price_usd" class="form-control" placeholder="65.00">
-                                    </div>
-
-                                    <!-- Images Upload Section -->
-                                    <div class="col-12 border-top pt-3 mt-2">
-                                        <label class="form-label fw-semibold fs-7"><i class="ti ti-photo me-1"></i>صور الوحدة</label>
-                                        <input type="file" name="images[]" multiple class="form-control" accept="image/*">
-                                    </div>
-
-                                    <div class="col-12">
-                                        <label class="form-label fw-semibold fs-7">حالة الوحدة</label>
-                                        <select name="status" class="form-select">
-                                            <option value="active">نشطة / متاحة</option>
-                                            <option value="inactive">معطلة / غير متاحة</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Amenities with Quantity -->
-                                    <div class="col-12 border-top pt-3 mt-2">
-                                        <label class="form-label fw-semibold fs-7 mb-2">المرافق والخدمات (مع تحديد الكميات)</label>
-                                        <div class="row g-2">
-                                            @foreach($allAmenities as $am)
-                                                <div class="col-md-6 col-lg-4">
-                                                    <div class="border rounded p-2 d-flex align-items-center justify-content-between">
-                                                        <div class="form-check mb-0">
-                                                            <input class="form-check-input" type="checkbox" name="amenity_ids[]" value="{{ $am->id }}" id="am{{ $prop->id }}_{{ $am->id }}">
-                                                            <label class="form-check-label fs-7" for="am{{ $prop->id }}_{{ $am->id }}">{{ $am->name_ar }}</label>
-                                                        </div>
-                                                        <input type="number" name="amenity_quantities[{{ $am->id }}]" class="form-control form-control-sm ms-2" value="1" min="1" style="width: 65px;" placeholder="العدد">
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                                    <button type="submit" class="btn btn-primary-custom">إضافة الوحدة وتخزين الأسعار والصور</button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -493,7 +393,7 @@
 
         <div class="card-custom p-4">
             <h5 class="fw-bold mb-3">تعديل بيانات المنظمة</h5>
-            <form action="{{ route('dashboard.orgs.update', $org->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('dashboard.orgs.update', $org->id) }}" method="POST" enctype="multipart/form-data" id="editOrgForm">
                 @csrf
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -524,7 +424,9 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">هاتف المنظمة</label>
-                        <input type="text" name="contact_phone" class="form-control" value="{{ $org->contact_phone }}">
+                        <div class="w-100">
+                            <input type="tel" id="contact_phone" name="contact_phone" class="form-control text-start" dir="ltr" style="direction: ltr; text-align: left;" value="{{ old('contact_phone', $org->contact_phone) }}">
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">البريد الإلكتروني</label>
@@ -649,3 +551,81 @@
 </div>
 
 @endsection
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/css/intlTelInput.css">
+    <style>
+        .iti { width: 100%; }
+        .iti__country-list {
+            text-align: right;
+            color: #212529 !important;
+            background-color: #ffffff !important;
+            z-index: 99999 !important;
+            max-height: 220px !important;
+            overflow-y: auto !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 8px !important;
+        }
+        .iti--container {
+            z-index: 99999 !important;
+        }
+        .iti__country {
+            padding: 8px 10px !important;
+            color: #212529 !important;
+        }
+        .iti__country:hover, .iti__country.iti__highlight {
+            background-color: #f8f9fa !important;
+        }
+        .iti--separate-dial-code .iti__selected-dial-code {
+            font-family: sans-serif;
+            direction: ltr;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/js/intlTelInput.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var phoneInput = document.querySelector("#contact_phone");
+            if (phoneInput) {
+                var iti = window.intlTelInput(phoneInput, {
+                    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/js/utils.js",
+                    autoHideDialCode: true,
+                    autoPlaceholder: "ON",
+                    formatOnDisplay: true,
+                    initialCountry: "ye",
+                    preferredCountries: ["ye", "sa", "ae"],
+                    placeholderNumberType: "MOBILE",
+                    separateDialCode: true
+                });
+
+                var existingVal = "{{ old('contact_phone', $org->contact_phone ?? '') }}".trim();
+                if (existingVal) {
+                    if (!existingVal.startsWith('+') && !existingVal.startsWith('00')) {
+                        if (existingVal.startsWith('967') || existingVal.startsWith('966')) {
+                            existingVal = '+' + existingVal;
+                        }
+                    }
+                    iti.setNumber(existingVal);
+                }
+
+                var form = document.querySelector("#editOrgForm");
+                if (form) {
+                    form.addEventListener("submit", function(e) {
+                        var val = phoneInput.value.trim();
+                        if (val !== "") {
+                            if (!iti.isValidNumber()) {
+                                alert("يرجى إدخال رقم هاتف صحيح شامل رمز الدولة.");
+                                e.preventDefault();
+                                return false;
+                            }
+                            phoneInput.value = iti.getNumber();
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+@endpush

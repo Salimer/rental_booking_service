@@ -109,6 +109,60 @@ class BookingService
     }
 
     /**
+     * Check unit availability or get list of unavailable dates for a calendar window.
+     */
+    public function checkAvailability(int $unitId, string $checkInDate, string $checkOutDate, ?string $mode = null): array
+    {
+        $checkIn = Carbon::parse($checkInDate)->startOfDay();
+        $checkOut = Carbon::parse($checkOutDate)->startOfDay();
+
+        $bookings = Booking::where('unit_id', $unitId)
+            ->whereIn('status', ['confirmed', 'submitted', 'pending'])
+            ->where('check_in_date', '<', $checkOut->format('Y-m-d'))
+            ->where('check_out_date', '>', $checkIn->format('Y-m-d'))
+            ->get();
+
+        $holds = DateHold::where('unit_id', $unitId)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->where('check_in_date', '<', $checkOut->format('Y-m-d'))
+            ->where('check_out_date', '>', $checkIn->format('Y-m-d'))
+            ->get();
+
+        if ($mode === 'calendar') {
+            $unavailableSet = [];
+
+            foreach ($bookings as $b) {
+                $period = CarbonPeriod::create($b->check_in_date, Carbon::parse($b->check_out_date)->subDay());
+                foreach ($period as $d) {
+                    $unavailableSet[$d->format('Y-m-d')] = true;
+                }
+            }
+
+            foreach ($holds as $h) {
+                $period = CarbonPeriod::create($h->check_in_date, Carbon::parse($h->check_out_date)->subDay());
+                foreach ($period as $d) {
+                    $unavailableSet[$d->format('Y-m-d')] = true;
+                }
+            }
+
+            return [
+                'unit_id' => $unitId,
+                'unavailable_dates' => array_values(array_keys($unavailableSet)),
+            ];
+        }
+
+        $isAvailable = $bookings->isEmpty() && $holds->isEmpty();
+
+        return [
+            'unit_id' => $unitId,
+            'check_in_date' => $checkIn->format('Y-m-d'),
+            'check_out_date' => $checkOut->format('Y-m-d'),
+            'is_available' => $isAvailable,
+        ];
+    }
+
+    /**
      * Process payment webhook from monolith to finalize booking.
      */
     public function handlePaymentWebhook(array $payload): array
@@ -125,15 +179,20 @@ class BookingService
             return ['success' => false, 'message' => 'Active hold token not found or expired.'];
         }
 
-        if ($status !== 'paid') {
+        if ($status !== 'paid' && $status !== 'pending') {
             $hold->update(['status' => 'failed']);
 
-            return ['success' => false, 'message' => 'Payment status is not paid.'];
+            return ['success' => false, 'message' => 'Payment status is not paid or pending.'];
         }
 
-        return DB::transaction(function () use ($hold, $paymentRef, $payload) {
+        $isPending = ($status === 'pending');
+
+        return DB::transaction(function () use ($hold, $paymentRef, $payload, $isPending) {
             $unit = Unit::with('property')->find($hold->unit_id);
             $referenceNo = 'BK-'.strtoupper(Str::random(8));
+
+            $bookingStatus = $isPending ? 'pending' : 'confirmed';
+            $paymentStatus = $isPending ? 'pending' : 'paid';
 
             $booking = Booking::create([
                 'reference_no' => $referenceNo,
@@ -151,10 +210,10 @@ class BookingService
                 'guest_note' => $hold->guest_note,
                 'unit_price' => $unit->price,
                 'currency' => $hold->currency,
-                'payment_status' => 'paid',
-                'status' => 'confirmed',
+                'payment_status' => $paymentStatus,
+                'status' => $bookingStatus,
                 'submitted_at' => now(),
-                'confirmed_at' => now(),
+                'confirmed_at' => $isPending ? null : now(),
             ]);
 
             BookingPayment::create([
@@ -164,15 +223,17 @@ class BookingService
                 'gateway' => $payload['gateway'] ?? 'online',
                 'amount' => $hold->total_amount,
                 'currency' => $hold->currency,
-                'payment_status' => 'paid',
+                'payment_status' => $paymentStatus,
                 'payment_method' => $payload['gateway'] ?? 'online',
-                'paid_at' => now(),
+                'paid_at' => $isPending ? null : now(),
             ]);
 
             BookingStatusLog::create([
                 'booking_id' => $booking->id,
-                'new_status' => 'confirmed',
-                'comment' => 'Booking created and confirmed via payment webhook.',
+                'new_status' => $bookingStatus,
+                'comment' => $isPending 
+                    ? 'Booking created in pending state via payment webhook (awaiting verification).'
+                    : 'Booking created and confirmed via payment webhook.',
             ]);
 
             $hold->update(['status' => 'consumed']);

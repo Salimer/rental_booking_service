@@ -19,6 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <!-- Central Theme Colors -->
     <link rel="stylesheet" href="{{ asset('css/dashboard-colors.css') }}">
+    @stack('styles')
+    @yield('styles')
 
     <style>
         :root {
@@ -472,6 +474,7 @@
             mobileToggleBtn?.addEventListener('click', toggleSidebar);
         });
     </script>
+    @stack('scripts')
     @yield('scripts')
 </body>
 </html>

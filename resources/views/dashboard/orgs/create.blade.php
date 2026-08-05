@@ -3,6 +3,38 @@
 @section('title', 'إضافة منظمة جديدة - نظام التأجير')
 @section('page-title', 'إضافة منظمة جديدة')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/css/intlTelInput.css">
+    <style>
+        .iti { width: 100%; }
+        .iti__country-list {
+            text-align: right;
+            color: #212529 !important;
+            background-color: #ffffff !important;
+            z-index: 99999 !important;
+            max-height: 220px !important;
+            overflow-y: auto !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 8px !important;
+        }
+        .iti--container {
+            z-index: 99999 !important;
+        }
+        .iti__country {
+            padding: 8px 10px !important;
+            color: #212529 !important;
+        }
+        .iti__country:hover, .iti__country.iti__highlight {
+            background-color: #f8f9fa !important;
+        }
+        .iti--separate-dial-code .iti__selected-dial-code {
+            font-family: sans-serif;
+            direction: ltr;
+        }
+    </style>
+@endpush
+
 @section('content')
 
 <div class="row justify-content-center">
@@ -11,7 +43,7 @@
             <h5 class="fw-bold mb-3"><i class="ti ti-building-store me-2 text-primary"></i>بيانات المنظمة والمزود</h5>
             <hr class="text-muted opacity-25 mb-4">
 
-            <form action="{{ route('dashboard.orgs.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('dashboard.orgs.store') }}" method="POST" enctype="multipart/form-data" id="createOrgForm">
                 @csrf
 
                 <div class="row g-3 mb-4">
@@ -33,10 +65,12 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">رقم هاتف المنظمة</label>
-                        <input type="text" name="contact_phone" class="form-control" placeholder="+967 770 000 000">
+                        <div class="w-100">
+                            <input type="tel" id="contact_phone" name="contact_phone" class="form-control text-start" dir="ltr" style="direction: ltr; text-align: left;" placeholder="+967 770 000 000" value="{{ old('contact_phone') }}">
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold fs-7">البريد الإلكتروني للإنذارات</label>
+                        <label class="form-label fw-semibold fs-7">البريد الإلكتروني للتواصل والإشعارات</label>
                         <input type="email" name="contact_email" class="form-control" placeholder="info@hotel.com">
                     </div>
                     <div class="col-md-6">
@@ -95,3 +129,39 @@
 </div>
 
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/js/intlTelInput.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var phoneInput = document.querySelector("#contact_phone");
+            if (phoneInput) {
+                var iti = window.intlTelInput(phoneInput, {
+                    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/js/utils.js",
+                    autoHideDialCode: true,
+                    autoPlaceholder: "ON",
+                    formatOnDisplay: true,
+                    initialCountry: "ye",
+                    preferredCountries: ["ye", "sa", "ae"],
+                    placeholderNumberType: "MOBILE",
+                    separateDialCode: true
+                });
+
+                var form = document.querySelector("#createOrgForm");
+                if (form) {
+                    form.addEventListener("submit", function(e) {
+                        var val = phoneInput.value.trim();
+                        if (val !== "") {
+                            if (!iti.isValidNumber()) {
+                                alert("يرجى إدخال رقم هاتف صحيح شامل رمز الدولة.");
+                                e.preventDefault();
+                                return false;
+                            }
+                            phoneInput.value = iti.getNumber();
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+@endpush

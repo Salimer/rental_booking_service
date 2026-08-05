@@ -27,6 +27,7 @@ Route::get('properties', [PropertyController::class, 'index']);
 Route::get('properties/{id}', [PropertyController::class, 'show']);
 Route::get('units', [UnitController::class, 'index']);
 Route::get('units/{id}', [UnitController::class, 'show']);
+Route::get('units/{id}/availability', [UnitController::class, 'checkAvailability']);
 Route::get('countries', [LocationController::class, 'countries']);
 Route::get('cities', [LocationController::class, 'cities']);
 Route::get('neighborhoods', [LocationController::class, 'neighborhoods']);
@@ -39,6 +40,7 @@ Route::prefix('rental')->group(function () {
     Route::get('properties/{id}', [PropertyController::class, 'show']);
     Route::get('units', [UnitController::class, 'index']);
     Route::get('units/{id}', [UnitController::class, 'show']);
+    Route::get('units/{id}/availability', [UnitController::class, 'checkAvailability']);
     Route::get('countries', [LocationController::class, 'countries']);
     Route::get('cities', [LocationController::class, 'cities']);
     Route::get('neighborhoods', [LocationController::class, 'neighborhoods']);

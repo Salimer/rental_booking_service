@@ -39,6 +39,7 @@ Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::post('/properties/{id}/update', [DashboardController::class, 'propertyUpdate'])->name('properties.update');
         Route::post('/properties/{id}/delete', [DashboardController::class, 'propertyDelete'])->name('properties.delete');
 
+        Route::get('/units/create', [DashboardController::class, 'unitCreate'])->name('units.create');
         Route::post('/units/store', [DashboardController::class, 'unitStore'])->name('units.store');
         Route::get('/units/{id}/edit', [DashboardController::class, 'unitEdit'])->name('units.edit');
         Route::post('/units/{id}/update', [DashboardController::class, 'unitUpdate'])->name('units.update');

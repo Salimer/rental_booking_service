@@ -198,11 +198,18 @@ class DashboardCrudTest extends TestCase
 
         $img1 = UploadedFile::fake()->image('u1.jpg');
 
+        // Create Unit View
+        $response = $this->actAsAdmin()->get(route('dashboard.units.create', ['property_id' => $property->id]));
+        $response->assertStatus(200);
+        $response->assertSee('إضافة وحدة إيواء جديدة');
+
         // Store Unit
         $response = $this->actAsAdmin()->post(route('dashboard.units.store'), [
             'property_id' => $property->id,
             'name_ar' => 'جناح ملكي فاخر',
             'name_en' => 'Luxury Royal Suite',
+            'description_ar' => 'وصف الجناح بالعربي',
+            'description_en' => 'Suite Description English',
             'pricing_mode' => 'per_night',
             'max_guests' => 4,
             'quantity' => 2,
@@ -219,8 +226,13 @@ class DashboardCrudTest extends TestCase
             'images' => [$img1],
         ]);
 
-        $response->assertRedirect();
-        $this->assertDatabaseHas('units', ['name_ar' => 'جناح ملكي فاخر', 'quantity' => 2]);
+        $response->assertRedirect(route('dashboard.orgs.show', $org->id));
+        $this->assertDatabaseHas('units', [
+            'name_ar' => 'جناح ملكي فاخر',
+            'description_ar' => 'وصف الجناح بالعربي',
+            'description_en' => 'Suite Description English',
+            'quantity' => 2
+        ]);
         $unit = Unit::where('name_ar', 'جناح ملكي فاخر')->first();
 
         $defaultPrice = Price::where('priceable_id', $unit->id)->where('priceable_type', Unit::class)->first();
