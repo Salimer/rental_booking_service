@@ -988,13 +988,19 @@ class DashboardController extends Controller
         $data = $request->validate([
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:100',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        $iconPath = null;
+        if ($request->hasFile('icon')) {
+            $path = $request->file('icon')->store('types/icons', 'public');
+            $iconPath = 'storage/' . $path;
+        }
 
         $type = Type::create([
             'name_ar' => $data['name_ar'],
             'name_en' => $data['name_en'] ?? $data['name_ar'],
-            'icon' => $data['icon'] ?? 'ti-home',
+            'icon' => $iconPath,
             'status' => true,
         ]);
 
@@ -1014,8 +1020,21 @@ class DashboardController extends Controller
         $data = $request->validate([
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:100',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        if ($request->hasFile('icon')) {
+            // Delete old icon from storage if it exists
+            if ($type->icon) {
+                $oldPath = str_replace('storage/', '', $type->icon);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $path = $request->file('icon')->store('types/icons', 'public');
+            $data['icon'] = 'storage/' . $path;
+        } else {
+            // Don't overwrite existing icon if no new file is uploaded
+            unset($data['icon']);
+        }
 
         $type->update($data);
         DashboardActivityLog::log('type.updated', $type);

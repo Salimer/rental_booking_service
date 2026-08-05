@@ -31,7 +31,15 @@
                             <tr>
                                 <td class="fw-bold">{{ $t->name_ar }}</td>
                                 <td>{{ $t->name_en }}</td>
-                                <td><i class="{{ $t->icon ?? 'ti-home' }} fs-5"></i></td>
+                                <td>
+                                    @if($t->icon)
+                                        <img src="{{ asset($t->icon) }}" alt="icon"
+                                             style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;"
+                                             onerror="this.style.display='none'">
+                                    @else
+                                        <span class="text-muted fs-7">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-end">
                                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#editTypeModal{{ $t->id }}">
                                         <i class="ti ti-edit"></i>
@@ -47,7 +55,7 @@
                                     <div class="modal fade text-start" id="editTypeModal{{ $t->id }}" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form action="{{ route('dashboard.settings.types.update', $t->id) }}" method="POST">
+                                                <form action="{{ route('dashboard.settings.types.update', $t->id) }}" method="POST" enctype="multipart/form-data">
                                                     @csrf
                                                     <div class="modal-header">
                                                         <h5 class="modal-title fw-bold">تعديل التصنيف: {{ $t->name_ar }}</h5>
@@ -63,8 +71,18 @@
                                                             <input type="text" name="name_en" class="form-control" value="{{ $t->name_en }}">
                                                         </div>
                                                         <div class="col-12">
-                                                            <label class="form-label fw-semibold fs-7">رمز الأيقونة (Icon class)</label>
-                                                            <input type="text" name="icon" class="form-control" value="{{ $t->icon }}">
+                                                            <label class="form-label fw-semibold fs-7">الصورة / الأيقونة</label>
+                                                            @if($t->icon)
+                                                                <div class="mb-2">
+                                                                    <img src="{{ asset($t->icon) }}" alt="current icon"
+                                                                         class="img-thumbnail"
+                                                                         style="width:60px;height:60px;object-fit:cover;"
+                                                                         onerror="this.style.display='none'">
+                                                                    <small class="text-muted d-block mt-1">الصورة الحالية</small>
+                                                                </div>
+                                                            @endif
+                                                            <input type="file" name="icon" class="form-control" accept="image/*">
+                                                            <small class="text-muted">اتركه فارغاً للإبقاء على الصورة الحالية</small>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -139,10 +157,6 @@
                                                         <div class="col-12">
                                                             <label class="form-label fw-semibold fs-7">اسم المرفق (بالإنجليزي)</label>
                                                             <input type="text" name="name_en" class="form-control" value="{{ $am->name_en }}">
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <label class="form-label fw-semibold fs-7">رمز الأيقونة</label>
-                                                            <input type="text" name="icon" class="form-control" value="{{ $am->icon }}">
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -298,7 +312,7 @@
 <div class="modal fade" id="addTypeModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('dashboard.settings.types.store') }}" method="POST">
+            <form action="{{ route('dashboard.settings.types.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">إضافة تصنيف جديد</h5>
@@ -314,8 +328,8 @@
                         <input type="text" name="name_en" class="form-control" placeholder="Hotels / Apartments">
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">رمز الأيقونة</label>
-                        <input type="text" name="icon" class="form-control" placeholder="ti-home">
+                        <label class="form-label fw-semibold fs-7">الصورة / الأيقونة</label>
+                        <input type="file" name="icon" class="form-control" accept="image/*">
                     </div>
                 </div>
                 <div class="modal-footer">
