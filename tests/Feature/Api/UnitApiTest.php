@@ -17,7 +17,7 @@ class UnitApiTest extends TestCase
     public function test_public_can_view_single_unit_details()
     {
         $type = Type::create(['name_ar' => 'شقة', 'name_en' => 'Apartment']);
-        $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
+        $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org', 'preferred_currency' => 'SAR']);
         $property = Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sea Tower', 'title_en' => 'Sea Tower', 'logo' => 'prop_logo.png']);
         $unit = Unit::create(['property_id' => $property->id, 'name_ar' => 'Penthouse', 'name_en' => 'Penthouse', 'images' => ['unit_img1.png']]);
 
@@ -44,7 +44,7 @@ class UnitApiTest extends TestCase
         ]);
 
         $type = Type::create(['name_ar' => 'شقة', 'name_en' => 'Apartment']);
-        $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
+        $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org', 'preferred_currency' => 'SAR']);
         $property = Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sea Tower', 'title_en' => 'Sea Tower']);
         $unit = Unit::create(['property_id' => $property->id, 'name_ar' => 'Penthouse', 'name_en' => 'Penthouse']);
 

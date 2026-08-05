@@ -48,6 +48,55 @@ class Property extends Model
         'star_rating' => 'integer',
     ];
 
+    protected $appends = [
+        'starting_price',
+        'base_price',
+        'currency',
+    ];
+
+    public function getStartingPriceAttribute()
+    {
+        if (!$this->relationLoaded('units')) {
+            return 0.00;
+        }
+
+        $activeUnits = $this->units->where('status', 'active');
+        if ($activeUnits->isEmpty()) {
+            return 0.00;
+        }
+
+        $orgCurrency = $this->relationLoaded('org') && $this->org ? $this->org->preferred_currency : Org::where('id', $this->org_id)->value('preferred_currency');
+        if (!$orgCurrency) {
+            return 0.00;
+        }
+
+        $minPrice = null;
+        foreach ($activeUnits as $unit) {
+            if (!$unit->relationLoaded('prices')) {
+                $unit->load('prices');
+            }
+            $defaultPrice = $unit->prices->firstWhere('price_type', 'default');
+            if ($defaultPrice) {
+                $val = (float) $defaultPrice->getValueForCurrency($orgCurrency);
+                if ($minPrice === null || $val < $minPrice) {
+                    $minPrice = $val;
+                }
+            }
+        }
+
+        return $minPrice !== null ? (float) $minPrice : 0.00;
+    }
+
+    public function getBasePriceAttribute()
+    {
+        return $this->starting_price;
+    }
+
+    public function getCurrencyAttribute()
+    {
+        return $this->org?->preferred_currency;
+    }
+
     public function getLogoUrlAttribute(): ?string
     {
         if (!$this->logo) {

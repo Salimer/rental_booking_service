@@ -35,6 +35,7 @@ class Unit extends Model
     protected $appends = [
         'price',
         'weekend_price',
+        'currency',
     ];
 
     public function toArray()
@@ -75,32 +76,70 @@ class Unit extends Model
         return $this->belongsToMany(Amenity::class, 'unit_amenity')->withPivot('quantity');
     }
 
+    public function getOrgPreferredCurrency(): ?string
+    {
+        if ($this->relationLoaded('property') && $this->property) {
+            if ($this->property->relationLoaded('org') && $this->property->org) {
+                return $this->property->org->preferred_currency;
+            }
+            return Org::where('id', $this->property->org_id)->value('preferred_currency');
+        }
+
+        return Property::join('orgs', 'properties.org_id', '=', 'orgs.id')
+            ->where('properties.id', $this->property_id)
+            ->value('orgs.preferred_currency');
+    }
+
     public function getPriceAttribute($value = null)
     {
-        if (array_key_exists('price', $this->attributes)) {
-            return $this->attributes['price'];
+        $orgCurrency = $this->getOrgPreferredCurrency();
+        if (!$orgCurrency) {
+            throw new \LogicException("Unit #{$this->id} cannot resolve price: Organization preferred currency is not defined.");
         }
-        $defaultPrice = $this->prices->firstWhere('price_type', 'default');
 
-        return $defaultPrice ? $defaultPrice->price_sar : 0.00;
+        $defaultPrice = $this->prices->firstWhere('price_type', 'default');
+        if (!$defaultPrice) {
+            return 0.00;
+        }
+
+        return (float) $defaultPrice->getValueForCurrency($orgCurrency);
     }
 
     public function getWeekendPriceAttribute($value = null)
     {
-        if (array_key_exists('weekend_price', $this->attributes)) {
-            return $this->attributes['weekend_price'];
+        $orgCurrency = $this->getOrgPreferredCurrency();
+        if (!$orgCurrency) {
+            return null;
         }
-        $weekendPrice = $this->prices->firstWhere('price_type', 'weekend');
 
-        return $weekendPrice ? $weekendPrice->price_sar : null;
+        $weekendPrice = $this->prices->firstWhere('price_type', 'weekend');
+        if (!$weekendPrice) {
+            return null;
+        }
+
+        return (float) $weekendPrice->getValueForCurrency($orgCurrency);
     }
 
-    public function getActivePriceForDate($date, $currency)
+    public function getCurrencyAttribute($value = null)
     {
+        return $this->getOrgPreferredCurrency();
+    }
+
+    public function getActivePriceForDate($date, $currency = null)
+    {
+        $effectiveCurrency = $currency ?: $this->getOrgPreferredCurrency();
+        if (!$effectiveCurrency) {
+            throw new \LogicException("Unit #{$this->id} cannot resolve active price: Currency is not specified and Organization preferred currency is missing.");
+        }
+
         $prices = $this->prices;
         $activePriceRecord = Price::resolveActivePrice($prices, Carbon::parse($date));
 
-        return $activePriceRecord ? $activePriceRecord->getValueForCurrency($currency) : 0.00;
+        if (!$activePriceRecord) {
+            return 0.00;
+        }
+
+        return (float) $activePriceRecord->getValueForCurrency($effectiveCurrency);
     }
 
     public function property()

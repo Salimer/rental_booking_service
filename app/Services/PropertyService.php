@@ -14,7 +14,7 @@ class PropertyService
      */
     public function getCustomerProperties(array $filters): LengthAwarePaginator
     {
-        $query = Property::with(['units', 'type', 'city', 'country', 'neighborhood', 'org'])
+        $query = Property::with(['units.prices', 'type', 'city', 'country', 'neighborhood', 'org'])
             ->where('status', 'active')
             ->whereHas('units', function (Builder $q) {
                 $q->where('status', 'active');

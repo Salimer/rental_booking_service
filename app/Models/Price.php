@@ -153,7 +153,7 @@ class Price extends Model
      */
     public function getValueForCurrency($currency)
     {
-        switch (strtoupper($currency)) {
+        switch (strtoupper((string) $currency)) {
             case 'YER_N':
                 return $this->price_yer_n;
             case 'YER_S':
@@ -163,7 +163,7 @@ class Price extends Model
             case 'USD':
                 return $this->price_usd;
             default:
-                return $this->price_sar;
+                throw new \InvalidArgumentException("Unsupported currency: {$currency}");
         }
     }
 }

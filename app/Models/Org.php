@@ -35,9 +35,30 @@ class Org extends Model
         'notes',
     ];
 
+    public const SUPPORTED_CURRENCIES = ['YER_N', 'YER_S', 'SAR', 'USD'];
+
     protected $casts = [
         'commission' => 'decimal:2',
     ];
+
+    public function setPreferredCurrencyAttribute($value)
+    {
+        if (empty($value)) {
+            $this->attributes['preferred_currency'] = 'SAR';
+            return;
+        }
+
+        $upper = strtoupper(trim($value));
+        $normalized = match ($upper) {
+            'YERN', 'YER_N' => 'YER_N',
+            'YERS', 'YER_S' => 'YER_S',
+            'SAR' => 'SAR',
+            'USD' => 'USD',
+            default => throw new \InvalidArgumentException("Invalid preferred currency '{$value}'. Allowed values: " . implode(', ', self::SUPPORTED_CURRENCIES)),
+        };
+
+        $this->attributes['preferred_currency'] = $normalized;
+    }
 
     public function toArray()
     {

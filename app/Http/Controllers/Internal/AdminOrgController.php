@@ -33,6 +33,7 @@ class AdminOrgController extends Controller
             'code' => 'nullable|string|max:50',
             'contact_phone' => 'nullable|string|max:30',
             'contact_email' => 'nullable|string|max:100',
+            'preferred_currency' => 'nullable|string|in:YER_N,YER_S,SAR,USD',
             'status' => 'nullable|string|in:active,inactive',
         ]);
 
@@ -43,7 +44,15 @@ class AdminOrgController extends Controller
     public function updateOrg(Request $request, $id)
     {
         $org = Org::findOrFail($id);
-        $org->update($request->all());
+        $data = $request->validate([
+            'name' => 'nullable|string|max:150',
+            'code' => 'nullable|string|max:50',
+            'contact_phone' => 'nullable|string|max:30',
+            'contact_email' => 'nullable|string|max:100',
+            'preferred_currency' => 'nullable|string|in:YER_N,YER_S,SAR,USD',
+            'status' => 'nullable|string|in:active,inactive',
+        ]);
+        $org->update($data);
         return response()->json($org);
     }
 
