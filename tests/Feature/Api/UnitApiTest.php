@@ -18,14 +18,17 @@ class UnitApiTest extends TestCase
     {
         $type = Type::create(['name_ar' => 'شقة', 'name_en' => 'Apartment']);
         $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
-        $property = Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sea Tower', 'title_en' => 'Sea Tower']);
-        $unit = Unit::create(['property_id' => $property->id, 'name_ar' => 'Penthouse', 'name_en' => 'Penthouse']);
+        $property = Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sea Tower', 'title_en' => 'Sea Tower', 'logo' => 'prop_logo.png']);
+        $unit = Unit::create(['property_id' => $property->id, 'name_ar' => 'Penthouse', 'name_en' => 'Penthouse', 'images' => ['unit_img1.png']]);
 
         $response = $this->getJson("/api/v1/units/{$unit->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('id', $unit->id)
             ->assertJsonPath('name', 'Penthouse');
+
+        $this->assertStringContainsString('storage/rental_unit/unit_img1.png', $response->json('images.0'));
+        $this->assertStringContainsString('storage/rental_property/prop_logo.png', $response->json('property.logo'));
     }
 
     public function test_authenticated_vendor_can_get_and_set_unit_prices()

@@ -39,6 +39,20 @@ class Org extends Model
         'commission' => 'decimal:2',
     ];
 
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        if ($this->logo) {
+            $array['logo'] = $this->logo_url;
+        }
+        if ($this->cover_photo) {
+            $array['cover_photo'] = $this->cover_photo_url;
+        }
+
+        return $this->localizeArray($array);
+    }
+
     public function getLogoUrlAttribute(): ?string
     {
         if (!$this->logo) {

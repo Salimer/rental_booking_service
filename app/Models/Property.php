@@ -132,6 +132,13 @@ class Property extends Model
     {
         $array = parent::toArray();
 
+        if ($this->logo) {
+            $array['logo'] = $this->logo_url;
+        }
+        if (isset($array['images']) && is_array($array['images'])) {
+            $array['images'] = $this->gallery_urls;
+        }
+
         // Resolve effective settings: property-specific override takes priority, org default is the fallback
         $effectiveSettings = null;
         if ($this->relationLoaded('settings')) {

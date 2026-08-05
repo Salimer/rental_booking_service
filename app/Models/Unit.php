@@ -32,6 +32,22 @@ class Unit extends Model
         'quantity' => 'integer',
     ];
 
+    protected $appends = [
+        'price',
+        'weekend_price',
+    ];
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        if (isset($array['images']) && is_array($array['images'])) {
+            $array['images'] = $this->image_urls;
+        }
+
+        return $this->localizeArray($array);
+    }
+
     public function getImageUrlsAttribute(): array
     {
         $imgs = $this->images;

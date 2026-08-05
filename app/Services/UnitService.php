@@ -14,7 +14,7 @@ class UnitService
      */
     public function getUnitDetails(int $id): Unit
     {
-        return Unit::with(['property.org', 'amenities', 'prices'])->findOrFail($id);
+        return Unit::with(['property.org.settings', 'property.type', 'property.city', 'property.neighborhood', 'property.settings', 'amenities', 'prices'])->findOrFail($id);
     }
 
     /**
