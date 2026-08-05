@@ -16,7 +16,12 @@ class LocationService
 
     public function getCities(?int $countryId = null): Collection
     {
-        $query = City::where('status', 1);
+        $query = City::where('status', 1)
+            ->whereHas('properties', function ($q) {
+                $q->where('status', 'active')->whereHas('units', function ($u) {
+                    $u->where('status', 'active');
+                });
+            });
 
         if ($countryId) {
             $query->where('country_id', $countryId);
@@ -27,7 +32,12 @@ class LocationService
 
     public function getNeighborhoods(?int $cityId = null): Collection
     {
-        $query = Neighborhood::where('status', 1);
+        $query = Neighborhood::where('status', 1)
+            ->whereHas('properties', function ($q) {
+                $q->where('status', 'active')->whereHas('units', function ($u) {
+                    $u->where('status', 'active');
+                });
+            });
 
         if ($cityId) {
             $query->where('city_id', $cityId);

@@ -40,6 +40,7 @@ class PropertyServiceTest extends TestCase
             'title_en' => 'Sanaa Villa',
             'status' => 'active',
         ]);
+        Unit::create(['property_id' => $prop1->id, 'name_ar' => 'Unit 1', 'name_en' => 'Unit 1', 'status' => 'active', 'price' => 100]);
 
         $prop2 = Property::create([
             'org_id' => $org->id,

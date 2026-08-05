@@ -9,15 +9,14 @@ class AmenityService
 {
     public function getAmenities(?int $typeId = null): Collection
     {
-        $query = Amenity::query();
-
-        if ($typeId) {
-            $query->whereHas('units', function ($q) use ($typeId) {
-                $q->whereHas('property', function ($pq) use ($typeId) {
+        $query = Amenity::whereHas('units', function ($q) use ($typeId) {
+            $q->where('status', 'active')->whereHas('property', function ($pq) use ($typeId) {
+                $pq->where('status', 'active');
+                if ($typeId) {
                     $pq->where('type_id', $typeId);
-                });
+                }
             });
-        }
+        });
 
         return $query->get();
     }

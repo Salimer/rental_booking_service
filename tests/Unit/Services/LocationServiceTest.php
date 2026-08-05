@@ -40,6 +40,11 @@ class LocationServiceTest extends TestCase
         $city1 = City::create(['country_id' => $country1->id, 'name_ar' => 'صنعاء', 'name_en' => 'Sanaa', 'status' => 1]);
         $city2 = City::create(['country_id' => $country2->id, 'name_ar' => 'الرياض', 'name_en' => 'Riyadh', 'status' => 1]);
 
+        $type = \App\Models\Type::create(['name_ar' => 'Chalet', 'name_en' => 'Chalet']);
+        $org = \App\Models\Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
+        $p = \App\Models\Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'city_id' => $city1->id, 'title_ar' => 'Prop 1', 'status' => 'active']);
+        \App\Models\Unit::create(['property_id' => $p->id, 'name_ar' => 'Unit 1', 'name_en' => 'Unit 1', 'status' => 'active']);
+
         $yemenCities = $this->locationService->getCities($country1->id);
 
         $this->assertCount(1, $yemenCities);
@@ -52,6 +57,10 @@ class LocationServiceTest extends TestCase
         $city = City::create(['country_id' => $country->id, 'name_ar' => 'صنعاء', 'name_en' => 'Sanaa', 'status' => 1]);
 
         $neigh1 = Neighborhood::create(['city_id' => $city->id, 'name_ar' => 'حدة', 'name_en' => 'Haddah', 'status' => 1]);
+        $type = \App\Models\Type::create(['name_ar' => 'Chalet2', 'name_en' => 'Chalet2']);
+        $org = \App\Models\Org::create(['name_ar' => 'Org2', 'name_en' => 'Org2']);
+        $p = \App\Models\Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'city_id' => $city->id, 'neighborhood_id' => $neigh1->id, 'title_ar' => 'Prop 1', 'status' => 'active']);
+        \App\Models\Unit::create(['property_id' => $p->id, 'name_ar' => 'Unit 1', 'name_en' => 'Unit 1', 'status' => 'active']);
 
         $neighborhoods = $this->locationService->getNeighborhoods($city->id);
 

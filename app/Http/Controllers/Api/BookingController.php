@@ -117,7 +117,18 @@ class BookingController extends Controller
     )]
     public function estimatePrice(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+        if (empty($data['unit_id']) && !empty($data['rental_unit_id'])) {
+            $data['unit_id'] = $data['rental_unit_id'];
+        }
+        if (!empty($data['check_in_date']) && strlen($data['check_in_date']) >= 10) {
+            $data['check_in_date'] = substr($data['check_in_date'], 0, 10);
+        }
+        if (!empty($data['check_out_date']) && strlen($data['check_out_date']) >= 10) {
+            $data['check_out_date'] = substr($data['check_out_date'], 0, 10);
+        }
+
+        $validator = Validator::make($data, [
             'unit_id' => 'required|integer|exists:units,id',
             'check_in_date' => 'required|date_format:Y-m-d',
             'check_out_date' => 'required|date_format:Y-m-d|after:check_in_date',
@@ -129,7 +140,7 @@ class BookingController extends Controller
         }
 
         try {
-            $estimate = $this->bookingService->estimatePrice($request->all());
+            $estimate = $this->bookingService->estimatePrice($data);
 
             return response()->json($estimate, 200);
         } catch (\InvalidArgumentException $e) {
@@ -255,6 +266,56 @@ class BookingController extends Controller
             $this->bookingService->cancelBooking($booking, $request->input('reason'));
 
             return response()->json(['message' => 'Booking cancelled successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'unit_id' => 'nullable|integer',
+            'rental_unit_id' => 'nullable|integer',
+            'check_in_date' => 'required|date_format:Y-m-d',
+            'check_out_date' => 'required|date_format:Y-m-d|after:check_in_date',
+            'guests_count' => 'nullable|integer|min:1',
+            'guest_name' => 'nullable|string',
+            'guest_phone' => 'nullable|string',
+            'guest_email' => 'nullable|email',
+            'guest_note' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $data = $request->all();
+            if (empty($data['unit_id']) && !empty($data['rental_unit_id'])) {
+                $data['unit_id'] = $data['rental_unit_id'];
+            }
+
+            $res = $this->bookingService->createBooking($request->user(), $data);
+
+            return response()->json($res, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function processPayment($id, Request $request)
+    {
+        try {
+            $user = $request->user();
+            $booking = Booking::where('user_id', $user->id)->find($id);
+
+            if (! $booking) {
+                return response()->json(['message' => 'Booking not found'], 404);
+            }
+
+            $res = $this->bookingService->processPayment($booking, $request->all());
+
+            return response()->json($res, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }

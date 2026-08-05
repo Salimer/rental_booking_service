@@ -17,7 +17,9 @@ class PropertyApiTest extends TestCase
         $type = Type::create(['name_ar' => 'فيلا', 'name_en' => 'Villa']);
         $org = Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
 
-        Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sunset Villa', 'title_en' => 'Sunset Villa', 'status' => 'active']);
+        $p1 = Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Sunset Villa', 'title_en' => 'Sunset Villa', 'status' => 'active']);
+        \App\Models\Unit::create(['property_id' => $p1->id, 'name_ar' => 'Unit 1', 'name_en' => 'Unit 1', 'status' => 'active', 'price' => 100]);
+
         Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'title_ar' => 'Hidden Cottage', 'title_en' => 'Hidden Cottage', 'status' => 'inactive']);
 
         $response = $this->getJson('/api/v1/properties');

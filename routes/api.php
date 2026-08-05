@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\FavouriteController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TypeController;
 use App\Http\Controllers\Api\UnitController;
 use App\Http\Controllers\Webhook\PaymentWebhookController;
@@ -49,11 +50,13 @@ Route::prefix('rental')->group(function () {
 // Customer Authenticated Routes (via auth.monolith middleware)
 Route::middleware('auth.monolith')->group(function () {
     // Bookings
+    Route::post('bookings', [BookingController::class, 'store']);
     Route::post('bookings/estimate', [BookingController::class, 'estimatePrice']);
     Route::post('bookings/initiate-payment', [BookingController::class, 'initiatePayment']);
     Route::get('bookings', [BookingController::class, 'index']);
     Route::get('bookings/{id}', [BookingController::class, 'show']);
     Route::post('bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    Route::post('bookings/{id}/payment', [BookingController::class, 'processPayment']);
 
     // Coupons
     Route::post('coupons/apply', [CouponController::class, 'apply']);
@@ -68,14 +71,20 @@ Route::middleware('auth.monolith')->group(function () {
     Route::get('units/{id}/prices', [UnitController::class, 'getPrices']);
     Route::post('units/{id}/prices', [UnitController::class, 'setPrice']);
 
+    // Reviews
+    Route::post('reviews', [ReviewController::class, 'submitReview']);
+
     // Alias Authenticated Routes under rental/*
     Route::prefix('rental')->group(function () {
+        Route::post('bookings', [BookingController::class, 'store']);
         Route::post('bookings/estimate', [BookingController::class, 'estimatePrice']);
         Route::post('bookings/initiate-payment', [BookingController::class, 'initiatePayment']);
         Route::get('bookings', [BookingController::class, 'index']);
         Route::get('bookings/{id}', [BookingController::class, 'show']);
         Route::post('bookings/{id}/cancel', [BookingController::class, 'cancel']);
+        Route::post('bookings/{id}/payment', [BookingController::class, 'processPayment']);
         Route::post('coupons/apply', [CouponController::class, 'apply']);
+        Route::post('reviews', [ReviewController::class, 'submitReview']);
         Route::get('favourites', [FavouriteController::class, 'index']);
         Route::post('favourites/toggle', [FavouriteController::class, 'toggle']);
     });

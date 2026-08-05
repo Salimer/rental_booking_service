@@ -18,6 +18,11 @@ class LocationApiTest extends TestCase
         $city = City::create(['country_id' => $country->id, 'name_ar' => 'صنعاء', 'name_en' => 'Sanaa', 'status' => 1]);
         $neigh = Neighborhood::create(['city_id' => $city->id, 'name_ar' => 'حدة', 'name_en' => 'Haddah', 'status' => 1]);
 
+        $type = \App\Models\Type::create(['name_ar' => 'Chalet', 'name_en' => 'Chalet']);
+        $org = \App\Models\Org::create(['name_ar' => 'Org', 'name_en' => 'Org']);
+        $p = \App\Models\Property::create(['org_id' => $org->id, 'type_id' => $type->id, 'city_id' => $city->id, 'neighborhood_id' => $neigh->id, 'title_ar' => 'Prop 1', 'status' => 'active']);
+        \App\Models\Unit::create(['property_id' => $p->id, 'name_ar' => 'Unit 1', 'name_en' => 'Unit 1', 'status' => 'active']);
+
         $this->getJson('/api/v1/countries')
             ->assertStatus(200)
             ->assertJsonCount(1);

@@ -59,7 +59,10 @@ class UnitService
     public function getCustomerUnits(array $filters, int $limit = 10, int $offset = 0): array
     {
         $query = Unit::with(['prices', 'amenities', 'property.org', 'property.type', 'property.city', 'property.neighborhood'])
-            ->where('status', 'active');
+            ->where('status', 'active')
+            ->whereHas('property', function ($q) {
+                $q->where('status', 'active');
+            });
 
         if (!empty($filters['rental_type_id'])) {
             $query->whereHas('property', function ($q) use ($filters) {

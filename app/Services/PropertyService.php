@@ -15,7 +15,10 @@ class PropertyService
     public function getCustomerProperties(array $filters): LengthAwarePaginator
     {
         $query = Property::with(['units', 'type', 'city', 'country', 'neighborhood', 'org'])
-            ->where('status', 'active');
+            ->where('status', 'active')
+            ->whereHas('units', function (Builder $q) {
+                $q->where('status', 'active');
+            });
 
         if (! empty($filters['city_id'])) {
             $query->where('city_id', $filters['city_id']);
@@ -74,8 +77,9 @@ class PropertyService
     public function getPropertyDetails(int $id): Property
     {
         return Property::with([
-            'units.amenities',
-            'units.prices',
+            'units' => function ($q) {
+                $q->where('status', 'active')->with(['amenities', 'prices']);
+            },
             'type',
             'city',
             'country',
