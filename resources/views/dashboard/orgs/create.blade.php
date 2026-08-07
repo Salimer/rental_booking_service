@@ -91,6 +91,15 @@
                         <input type="text" name="address_ar" class="form-control" placeholder="شارع التسعين - صنعاء">
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">العملة المفضلة</label>
+                        <select name="preferred_currency" class="form-select">
+                            <option value="YER_N" {{ old('preferred_currency', 'YER_N') == 'YER_N' ? 'selected' : '' }}>ريال يمني (شمال - YER_N)</option>
+                            <option value="YER_S" {{ old('preferred_currency') == 'YER_S' ? 'selected' : '' }}>ريال يمني (جنوب - YER_S)</option>
+                            <option value="SAR" {{ old('preferred_currency') == 'SAR' ? 'selected' : '' }}>ريال سعودي (SAR)</option>
+                            <option value="USD" {{ old('preferred_currency') == 'USD' ? 'selected' : '' }}>دولار أمريكي (USD)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">حالة المنظمة</label>
                         <select name="status" class="form-select">
                             <option value="active">نشطة (مفعلة مباشرة)</option>

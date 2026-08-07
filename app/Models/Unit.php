@@ -36,7 +36,31 @@ class Unit extends Model
         'price',
         'weekend_price',
         'currency',
+        'discount_tag_ar',
+        'discount_tag_en',
+        'has_discount',
     ];
+
+    public function getDiscountTagArAttribute()
+    {
+        if ($this->relationLoaded('property') && $this->property) {
+            return $this->property->discount_tag_ar;
+        }
+        return Property::where('id', $this->property_id)->first()?->discount_tag_ar;
+    }
+
+    public function getDiscountTagEnAttribute()
+    {
+        if ($this->relationLoaded('property') && $this->property) {
+            return $this->property->discount_tag_en;
+        }
+        return Property::where('id', $this->property_id)->first()?->discount_tag_en;
+    }
+
+    public function getHasDiscountAttribute()
+    {
+        return !empty($this->discount_tag_ar) || !empty($this->discount_tag_en);
+    }
 
     public function toArray()
     {

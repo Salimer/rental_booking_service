@@ -108,10 +108,11 @@ class DashboardController extends Controller
         $staff = DashboardUser::where('org_id', $id)->latest()->get();
         $bookings = Booking::where('org_id', $id)->with(['property', 'unit', 'user'])->latest()->paginate(10);
         $allTypes = Type::active()->get();
+        $allCountries = Country::all();
         $allCities = City::all();
         $allAmenities = Amenity::all();
 
-        return view('dashboard.orgs.show', compact('org', 'staff', 'bookings', 'user', 'allTypes', 'allCities', 'allAmenities'));
+        return view('dashboard.orgs.show', compact('org', 'staff', 'bookings', 'user', 'allTypes', 'allCountries', 'allCities', 'allAmenities'));
     }
 
     public function orgCreate()
@@ -170,6 +171,7 @@ class DashboardController extends Controller
             'city' => $data['city'],
             'address_ar' => $data['address_ar'],
             'commission' => $data['commission'] ?? 10.00,
+            'preferred_currency' => $data['preferred_currency'] ?? 'SAR',
             'status' => $data['status'],
             'logo' => $logoPath,
             'cover_photo' => $coverPath,
@@ -232,6 +234,19 @@ class DashboardController extends Controller
         }
 
         $org->update($data);
+
+        // Update Org Settings (Free Night Promotion)
+        $freeNightEnabled = $request->boolean('free_night_enabled');
+        OrgSetting::updateOrCreate(
+            ['org_id' => $org->id],
+            [
+                'free_night_enabled' => $freeNightEnabled,
+                'free_night_min_nights' => $request->input('free_night_min_nights', 3),
+                'free_night_max_nights' => $request->input('free_night_max_nights') ?: null,
+                'free_nights_count' => $request->input('free_nights_count', 1),
+            ]
+        );
+
         DashboardActivityLog::log('org.updated', $org);
 
         return back()->with('success', 'تم تحديث بيانات المنظمة بنجاح.');
@@ -440,11 +455,28 @@ class DashboardController extends Controller
             'rental_type_id' => 'nullable|exists:types,id',
             'name_ar' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'country_id' => 'nullable|exists:countries,id',
             'city_id' => 'nullable|exists:cities,id',
+            'neighborhood_id' => 'nullable|exists:neighborhoods,id',
             'address_ar' => 'nullable|string',
+            'address_en' => 'nullable|string',
+            'rules_ar' => 'nullable|string',
+            'rules_en' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'star_rating' => 'nullable|integer|min:1|max:5',
             'status' => 'required|in:active,inactive,draft,pending',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'has_custom_settings' => 'nullable|boolean',
+            'check_in_time' => 'nullable|string',
+            'check_out_time' => 'nullable|string',
+            'cancellation_policy_ar' => 'nullable|string',
+            'cancellation_policy_en' => 'nullable|string',
+            'allow_instant_booking' => 'nullable|boolean',
+            'requires_id_verification' => 'nullable|boolean',
         ]);
 
         $typeId = $data['type_id'] ?? $data['rental_type_id'] ?? null;
@@ -475,12 +507,35 @@ class DashboardController extends Controller
             'type_id' => $typeId,
             'title_ar' => $data['name_ar'],
             'title_en' => $data['name_en'] ?? $data['name_ar'],
-            'city_id' => $data['city_id'],
-            'address_ar' => $data['address_ar'],
+            'description_ar' => $data['description_ar'] ?? null,
+            'description_en' => $data['description_en'] ?? null,
+            'city_id' => $data['city_id'] ?? null,
+            'neighborhood_id' => $data['neighborhood_id'] ?? null,
+            'address_ar' => $data['address_ar'] ?? null,
+            'address_en' => $data['address_en'] ?? null,
+            'rules_ar' => $data['rules_ar'] ?? null,
+            'rules_en' => $data['rules_en'] ?? null,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
+            'star_rating' => $data['star_rating'] ?? null,
             'status' => $data['status'],
             'logo' => $logoPath,
             'images' => $uploadedImages,
         ]);
+
+        if (!empty($data['has_custom_settings'])) {
+            PropertySetting::create([
+                'property_id' => $property->id,
+                'check_in_time' => $data['check_in_time'] ?? '14:00:00',
+                'check_out_time' => $data['check_out_time'] ?? '11:00:00',
+                'cancellation_policy_ar' => $data['cancellation_policy_ar'] ?? 'مرنة - إلغاء مجاني حتى 24 ساعة',
+                'cancellation_policy_en' => $data['cancellation_policy_en'] ?? 'Flexible - Free cancellation up to 24h',
+                'min_advance_booking_days' => 1,
+                'max_advance_booking_days' => 365,
+                'allow_instant_booking' => !empty($data['allow_instant_booking']),
+                'requires_id_verification' => !empty($data['requires_id_verification']),
+            ]);
+        }
 
         DashboardActivityLog::log('property.created', $property);
 
@@ -498,10 +553,11 @@ class DashboardController extends Controller
 
         $orgs = $user->isAdmin() ? Org::all() : Org::where('id', $user->org_id)->get();
         $types = Type::active()->get();
+        $countries = Country::all();
         $cities = City::all();
         $neighborhoods = $property->city_id ? Neighborhood::where('city_id', $property->city_id)->get() : collect();
 
-        return view('dashboard.properties.edit', compact('property', 'orgs', 'types', 'cities', 'neighborhoods', 'user'));
+        return view('dashboard.properties.edit', compact('property', 'orgs', 'types', 'countries', 'cities', 'neighborhoods', 'user'));
     }
 
     public function propertyUpdate(Request $request, $id)
@@ -519,12 +575,15 @@ class DashboardController extends Controller
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
             'type_id' => 'required|exists:types,id',
+            'country_id' => 'nullable|exists:countries,id',
             'city_id' => 'nullable|exists:cities,id',
             'neighborhood_id' => 'nullable|exists:neighborhoods,id',
             'address_ar' => 'nullable|string',
             'address_en' => 'nullable|string',
             'rules_ar' => 'nullable|string',
             'rules_en' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'star_rating' => 'nullable|integer|min:1|max:5',
             'status' => 'required|in:active,inactive,draft,pending',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -571,6 +630,8 @@ class DashboardController extends Controller
             'address_en' => $data['address_en'] ?? null,
             'rules_ar' => $data['rules_ar'] ?? null,
             'rules_en' => $data['rules_en'] ?? null,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
             'star_rating' => $data['star_rating'] ?? null,
             'status' => $data['status'],
             'logo' => $data['logo'] ?? $property->logo,

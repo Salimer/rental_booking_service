@@ -41,7 +41,7 @@ class BookingService
             throw new \InvalidArgumentException('Check-out date must be after check-in date.');
         }
 
-        $currency = strtoupper($data['currency'] ?? 'SAR');
+        $currency = strtoupper($data['currency'] ?? $unit->currency ?? 'SAR');
         $nights = $checkIn->diffInDays($checkOut);
         $totalBasePrice = 0;
         $nightlyBreakdown = [];

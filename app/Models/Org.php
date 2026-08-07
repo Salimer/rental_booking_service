@@ -50,8 +50,8 @@ class Org extends Model
 
         $upper = strtoupper(trim($value));
         $normalized = match ($upper) {
-            'YERN', 'YER_N' => 'YER_N',
-            'YERS', 'YER_S' => 'YER_S',
+            'YER_N' => 'YER_N',
+            'YER_S' => 'YER_S',
             'SAR' => 'SAR',
             'USD' => 'USD',
             default => throw new \InvalidArgumentException("Invalid preferred currency '{$value}'. Allowed values: " . implode(', ', self::SUPPORTED_CURRENCIES)),

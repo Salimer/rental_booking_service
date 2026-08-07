@@ -11,12 +11,12 @@ class LocationService
 {
     public function getCountries(): Collection
     {
-        return Country::where('status', 1)->orderBy('name_ar', 'asc')->get();
+        return Country::whereIn('status', ['active', '1', 1])->orderBy('name_ar', 'asc')->get();
     }
 
     public function getCities(?int $countryId = null): Collection
     {
-        $query = City::where('status', 1)
+        $query = City::whereIn('status', ['active', '1', 1])
             ->whereHas('properties', function ($q) {
                 $q->where('status', 'active')->whereHas('units', function ($u) {
                     $u->where('status', 'active');
@@ -32,7 +32,7 @@ class LocationService
 
     public function getNeighborhoods(?int $cityId = null): Collection
     {
-        $query = Neighborhood::where('status', 1)
+        $query = Neighborhood::whereIn('status', ['active', '1', 1])
             ->whereHas('properties', function ($q) {
                 $q->where('status', 'active')->whereHas('units', function ($u) {
                     $u->where('status', 'active');

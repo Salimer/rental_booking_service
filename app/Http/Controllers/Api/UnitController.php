@@ -23,15 +23,21 @@ class UnitController extends Controller
         $offset = (int) $request->query('offset', 0);
 
         $filters = [
-            'rental_type_id' => $request->query('rental_type_id'),
+            'type_id' => $request->query('type_id') ?? $request->query('rental_type_id'),
             'max_guests' => $request->query('max_guests'),
-            'city_id' => $request->query('rental_city_id') ?? $request->query('city_id'),
-            'neighborhood_id' => $request->query('rental_neighborhood_id') ?? $request->query('neighborhood_id'),
-            'country_id' => $request->query('rental_country_id') ?? $request->query('country_id'),
+            'city_id' => $request->query('city_id') ?? $request->query('rental_city_id') ?? $request->query('city'),
+            'neighborhood_id' => $request->query('neighborhood_id') ?? $request->query('rental_neighborhood_id'),
+            'country_id' => $request->query('country_id') ?? $request->query('rental_country_id'),
             'amenity_ids' => $request->query('amenity_ids'),
+            'amenity_quantities' => $request->query('amenity_quantities'),
+            'amenity_filter_mode' => $request->query('amenity_filter_mode', 'any'),
             'min_price' => $request->query('min_price'),
             'max_price' => $request->query('max_price'),
+            'min_rating' => $request->query('min_rating'),
+            'has_discount' => $request->query('has_discount'),
             'search' => $request->query('search'),
+            'check_in_date' => $request->query('check_in_date') ?? $request->query('check_in'),
+            'check_out_date' => $request->query('check_out_date') ?? $request->query('check_out'),
         ];
 
         $result = $this->unitService->getCustomerUnits($filters, $limit, $offset);

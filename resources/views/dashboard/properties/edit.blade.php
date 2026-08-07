@@ -46,7 +46,7 @@
                     <div class="col-12">
                         <h6 class="fw-bold text-muted border-bottom pb-2 mb-3"><i class="ti ti-map-pin me-1"></i>التصنيف والموقع والحالة</h6>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold fs-7">تصنيف الإيواء *</label>
                         <select name="type_id" class="form-select" required>
                             @foreach($types as $t)
@@ -54,16 +54,34 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold fs-7">المدينة</label>
-                        <select name="city_id" class="form-select" id="citySelect">
-                            <option value="">اختر المدينة...</option>
-                            @foreach($cities as $c)
-                                <option value="{{ $c->id }}" {{ old('city_id', $property->city_id) == $c->id ? 'selected' : '' }}>{{ $c->name_ar }}</option>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">الدولة</label>
+                        <select name="country_id" id="editCountrySelect" class="form-select">
+                            <option value="">اختر الدولة...</option>
+                            @foreach($countries as $co)
+                                <option value="{{ $co->id }}" {{ old('country_id', $property->country?->id ?? $property->city?->country_id) == $co->id ? 'selected' : '' }}>{{ $co->name_ar }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">المدينة</label>
+                        <select name="city_id" class="form-select" id="editCitySelect">
+                            <option value="">اختر المدينة...</option>
+                            @foreach($cities as $c)
+                                <option value="{{ $c->id }}" data-country-id="{{ $c->country_id }}" {{ old('city_id', $property->city_id) == $c->id ? 'selected' : '' }}>{{ $c->name_ar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">الحي / المنطقة</label>
+                        <select name="neighborhood_id" class="form-select" id="editNeighborhoodSelect">
+                            <option value="">اختر الحي...</option>
+                            @foreach($neighborhoods as $n)
+                                <option value="{{ $n->id }}" {{ old('neighborhood_id', $property->neighborhood_id) == $n->id ? 'selected' : '' }}>{{ $n->name_ar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-12">
                         <label class="form-label fw-semibold fs-7">تقييم النجوم (Star Rating)</label>
                         <select name="star_rating" class="form-select">
                             <option value="">بدون تقييم</option>
@@ -72,13 +90,24 @@
                             @endfor
                         </select>
                     </div>
+                    <div class="col-12">
+                        @include('dashboard.partials.map_picker', [
+                            'mapId' => 'edit_prop_map',
+                            'lat' => old('latitude', $property->latitude),
+                            'lng' => old('longitude', $property->longitude),
+                            'latInputId' => 'latitude',
+                            'lngInputId' => 'longitude',
+                            'addressArId' => 'address_ar',
+                            'addressEnId' => 'address_en',
+                        ])
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">العنوان (بالعربي)</label>
-                        <input type="text" name="address_ar" class="form-control" value="{{ old('address_ar', $property->address_ar) }}">
+                        <input type="text" name="address_ar" id="address_ar" class="form-control" value="{{ old('address_ar', $property->address_ar) }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">العنوان (بالإنجليزي)</label>
-                        <input type="text" name="address_en" class="form-control" value="{{ old('address_en', $property->address_en) }}">
+                        <input type="text" name="address_en" id="address_en" class="form-control" value="{{ old('address_en', $property->address_en) }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">شروط وقواعد البيت (بالعربي)</label>
@@ -192,3 +221,43 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const editCountrySelect = document.getElementById('editCountrySelect');
+        const editCitySelect = document.getElementById('editCitySelect');
+        const editNeighSelect = document.getElementById('editNeighborhoodSelect');
+
+        if (editCitySelect) {
+            editCitySelect.addEventListener('change', function() {
+                const cityId = this.value;
+                const selectedOpt = this.options[this.selectedIndex];
+                const countryId = selectedOpt ? selectedOpt.getAttribute('data-country-id') : null;
+
+                if (countryId && editCountrySelect) {
+                    editCountrySelect.value = countryId;
+                }
+
+                if (editNeighSelect) {
+                    editNeighSelect.innerHTML = '<option value="">اختر الحي...</option>';
+                    if (!cityId) return;
+
+                    fetch(`/api/v1/neighborhoods?city_id=${cityId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (Array.isArray(data)) {
+                                data.forEach(item => {
+                                    const opt = document.createElement('option');
+                                    opt.value = item.id;
+                                    opt.textContent = item.name_ar || item.name_en;
+                                    editNeighSelect.appendChild(opt);
+                                });
+                            }
+                        }).catch(err => console.error("Error loading neighborhoods:", err));
+                }
+            });
+        }
+    });
+</script>
+@endpush

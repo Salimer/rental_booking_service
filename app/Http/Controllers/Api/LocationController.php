@@ -52,7 +52,9 @@ class LocationController extends Controller
     )]
     public function cities(Request $request)
     {
-        return response()->json($this->locationService->getCities($request->input('country_id')));
+        $countryId = $request->input('country_id') ?? $request->input('rental_country_id');
+        $countryId = $countryId ? (int) $countryId : null;
+        return response()->json($this->locationService->getCities($countryId));
     }
 
     #[OA\Get(
@@ -73,6 +75,8 @@ class LocationController extends Controller
     )]
     public function neighborhoods(Request $request)
     {
-        return response()->json($this->locationService->getNeighborhoods($request->input('city_id')));
+        $cityId = $request->input('city_id') ?? $request->input('rental_city_id') ?? $request->input('city');
+        $cityId = $cityId ? (int) $cityId : null;
+        return response()->json($this->locationService->getNeighborhoods($cityId));
     }
 }

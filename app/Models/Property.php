@@ -52,7 +52,69 @@ class Property extends Model
         'starting_price',
         'base_price',
         'currency',
+        'discount_tag_ar',
+        'discount_tag_en',
+        'has_discount',
     ];
+
+    public function getDiscountTagArAttribute()
+    {
+        $orgSettings = $this->relationLoaded('org') && $this->org ? $this->org->settings : OrgSetting::where('org_id', $this->org_id)->first();
+        if ($orgSettings && $orgSettings->free_night_enabled) {
+            $minNights = $orgSettings->free_night_min_nights ?? 3;
+            $freeNights = $orgSettings->free_nights_count ?? 1;
+            $payNights = max(1, $minNights - $freeNights);
+            return "احجز {$minNights} ليالٍ وادفع {$payNights}";
+        }
+
+        $activeCoupon = Coupon::where('property_id', $this->id)
+            ->where('status', 1)
+            ->where('start_date', '<=', now()->toDateString())
+            ->where('expire_date', '>=', now()->toDateString())
+            ->first();
+
+        if ($activeCoupon) {
+            if ($activeCoupon->discount_type === 'percent') {
+                return "خصم " . ((float)$activeCoupon->discount) . "% (كوبون: {$activeCoupon->code})";
+            }
+            $currency = $this->currency ?? 'SAR';
+            return "خصم " . ((float)$activeCoupon->discount) . " {$currency} (كوبون: {$activeCoupon->code})";
+        }
+
+        return null;
+    }
+
+    public function getDiscountTagEnAttribute()
+    {
+        $orgSettings = $this->relationLoaded('org') && $this->org ? $this->org->settings : OrgSetting::where('org_id', $this->org_id)->first();
+        if ($orgSettings && $orgSettings->free_night_enabled) {
+            $minNights = $orgSettings->free_night_min_nights ?? 3;
+            $freeNights = $orgSettings->free_nights_count ?? 1;
+            $payNights = max(1, $minNights - $freeNights);
+            return "Stay {$minNights} Pay {$payNights}";
+        }
+
+        $activeCoupon = Coupon::where('property_id', $this->id)
+            ->where('status', 1)
+            ->where('start_date', '<=', now()->toDateString())
+            ->where('expire_date', '>=', now()->toDateString())
+            ->first();
+
+        if ($activeCoupon) {
+            if ($activeCoupon->discount_type === 'percent') {
+                return ((float)$activeCoupon->discount) . "% Off (Code: {$activeCoupon->code})";
+            }
+            $currency = $this->currency ?? 'SAR';
+            return ((float)$activeCoupon->discount) . " {$currency} Off (Code: {$activeCoupon->code})";
+        }
+
+        return null;
+    }
+
+    public function getHasDiscountAttribute()
+    {
+        return !empty($this->discount_tag_ar) || !empty($this->discount_tag_en);
+    }
 
     public function getStartingPriceAttribute()
     {
@@ -251,7 +313,7 @@ class Property extends Model
 
     public function country()
     {
-        return $this->belongsTo(Country::class, 'country_id');
+        return $this->hasOneThrough(Country::class, City::class, 'id', 'id', 'city_id', 'country_id');
     }
 
     public function city()

@@ -440,6 +440,15 @@
                         <label class="form-label fw-semibold fs-7">العنوان</label>
                         <input type="text" name="address_ar" class="form-control" value="{{ $org->address_ar }}">
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">العملة المفضلة (Preferred Currency)</label>
+                        <select name="preferred_currency" class="form-select">
+                            <option value="YER_N" {{ old('preferred_currency', $org->preferred_currency) == 'YER_N' ? 'selected' : '' }}>ريال يمني (شمال - YER_N)</option>
+                            <option value="YER_S" {{ old('preferred_currency', $org->preferred_currency) == 'YER_S' ? 'selected' : '' }}>ريال يمني (جنوب - YER_S)</option>
+                            <option value="SAR" {{ old('preferred_currency', $org->preferred_currency) == 'SAR' ? 'selected' : '' }}>ريال سعودي (SAR)</option>
+                            <option value="USD" {{ old('preferred_currency', $org->preferred_currency) == 'USD' ? 'selected' : '' }}>دولار أمريكي (USD)</option>
+                        </select>
+                    </div>
                     @if($user->isAdmin())
                         <div class="col-md-6">
                             <label class="form-label fw-semibold fs-7">نسبة العمولة (%)</label>
@@ -454,6 +463,36 @@
                             </select>
                         </div>
                     @endif
+                </div>
+
+                <!-- Free Night Promotion (Book 3 Pay 2) Settings -->
+                <div class="card bg-light-subtle border p-3 mt-4">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" name="free_night_enabled" value="1" id="freeNightEnabled" {{ ($org->settings?->free_night_enabled ?? false) ? 'checked' : '' }} onchange="document.getElementById('freeNightDiv').style.display = this.checked ? 'block' : 'none';">
+                        <label class="form-check-label fw-bold" for="freeNightEnabled">
+                            <i class="ti ti-gift text-primary me-1"></i>تفعيل عرض الليالي المجانية (مثال: احجز 3 ليالٍ وادفع 2)
+                        </label>
+                    </div>
+
+                    <div id="freeNightDiv" style="{{ ($org->settings?->free_night_enabled ?? false) ? '' : 'display: none;' }}" class="pt-3 border-top mt-2">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fs-7 fw-semibold">الحد الأدنى لليالي للاستفادة *</label>
+                                <input type="number" name="free_night_min_nights" class="form-control" value="{{ $org->settings?->free_night_min_nights ?? 3 }}" min="1">
+                                <small class="text-muted fs-7">عدد الليالي المطلوبة لتفعيل الخصم (مثلاً: 3)</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fs-7 fw-semibold">الحد الأقصى لليالي (اختياري)</label>
+                                <input type="number" name="free_night_max_nights" class="form-control" value="{{ $org->settings?->free_night_max_nights ?? '' }}" min="1" placeholder="بلا حد أقصى">
+                                <small class="text-muted fs-7">اتركه فارغاً إذا كان ينطبق على أي إقامة أطول</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fs-7 fw-semibold">عدد الليالي المجانية *</label>
+                                <input type="number" name="free_nights_count" class="form-control" value="{{ $org->settings?->free_nights_count ?? 1 }}" min="1">
+                                <small class="text-muted fs-7">عدد الليالي التي سيتم خصم قيمتها (مثلاً: 1)</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4 d-flex justify-content-between align-items-center">
@@ -483,26 +522,43 @@
 
 <!-- Modal: Add Property -->
 <div class="modal fade" id="addPropertyModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('dashboard.properties.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="org_id" value="{{ $org->id }}">
 
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة عقار جديد لـ {{ $org->name_ar }}</h5>
+                    <h5 class="modal-title fw-bold"><i class="ti ti-building-hospital me-1 text-primary"></i> إضافة عقار جديد لـ {{ $org->name_ar }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body row g-3">
+                    <!-- Basic Info -->
                     <div class="col-12">
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-1"><i class="ti ti-info-circle me-1"></i>البيانات الأساسية</h6>
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">اسم العقار (بالعربي) *</label>
                         <input type="text" name="name_ar" class="form-control" required placeholder="برج الأمل الفندقي">
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">اسم العقار (بالإنجليزي)</label>
                         <input type="text" name="name_en" class="form-control" placeholder="Al Amal Hotel Tower">
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">وصف العقار (بالعربي)</label>
+                        <textarea name="description_ar" class="form-control" rows="2" placeholder="وصف تفصيلي للعقار باللغة العربية..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">وصف العقار (بالإنجليزي)</label>
+                        <textarea name="description_en" class="form-control" rows="2" placeholder="Property detailed description in English..."></textarea>
+                    </div>
+
+                    <!-- Category & Attributes -->
+                    <div class="col-12 mt-3">
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-1"><i class="ti ti-map-pin me-1"></i>التصنيف والموقع والتصنيف النجمي</h6>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold fs-7">تصنيف الإيواء *</label>
                         <select name="type_id" class="form-select" required>
                             <option value="">اختر التصنيف...</option>
@@ -511,18 +567,83 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">المدينة</label>
-                        <select name="city_id" class="form-select">
-                            <option value="">اختر المدينة...</option>
-                            @foreach($allCities as $c)
-                                <option value="{{ $c->id }}">{{ $c->name_ar }}</option>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">الدولة</label>
+                        <select name="country_id" id="modal_country_id" class="form-select">
+                            <option value="">اختر الدولة...</option>
+                            @foreach($allCountries as $co)
+                                <option value="{{ $co->id }}" {{ $co->name_ar == 'اليمن' ? 'selected' : '' }}>{{ $co->name_ar }}</option>
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">المدينة</label>
+                        <select name="city_id" id="modal_city_id" class="form-select">
+                            <option value="">اختر المدينة...</option>
+                            @foreach($allCities as $c)
+                                <option value="{{ $c->id }}" data-country-id="{{ $c->country_id }}">{{ $c->name_ar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold fs-7">الحي / المنطقة</label>
+                        <select name="neighborhood_id" id="modal_neighborhood_id" class="form-select">
+                            <option value="">اختر الحي...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold fs-7">تقييم النجوم (Star Rating)</label>
+                        <select name="star_rating" class="form-select">
+                            <option value="">بدون تقييم</option>
+                            @for($i=1; $i<=5; $i++)
+                                <option value="{{ $i }}">{{ $i }} نجوم ⭐</option>
+                            @endfor
+                        </select>
+                    </div>
+
+                    <!-- Map Picker Component -->
                     <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">العنوان التفصيلي</label>
-                        <input type="text" name="address_ar" class="form-control" placeholder="شارع حدة - صنعاء">
+                        @include('dashboard.partials.map_picker', [
+                            'mapId' => 'modal_prop_map',
+                            'lat' => null,
+                            'lng' => null,
+                            'latInputId' => 'modal_latitude',
+                            'lngInputId' => 'modal_longitude',
+                            'addressArId' => 'modal_address_ar',
+                            'addressEnId' => 'modal_address_en',
+                        ])
+                    </div>
+
+                    <!-- Address & Rules -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">العنوان (بالعربي)</label>
+                        <input type="text" name="address_ar" id="modal_address_ar" class="form-control" placeholder="شارع حدة - صنعاء">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">العنوان (بالإنجليزي)</label>
+                        <input type="text" name="address_en" id="modal_address_en" class="form-control" placeholder="Hadda St, Sana'a">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">شروط وقواعد البيت (بالعربي)</label>
+                        <textarea name="rules_ar" class="form-control" rows="2" placeholder="شروط الإقامة وإرشادات البيت بالعربي..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold fs-7">شروط وقواعد البيت (بالإنجليزي)</label>
+                        <textarea name="rules_en" class="form-control" rows="2" placeholder="House rules & accommodation policies in English..."></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold fs-7">حالة العقار *</label>
+                        <select name="status" class="form-select" required>
+                            <option value="active">نشط (Active)</option>
+                            <option value="pending">قيد الموافقة (Pending)</option>
+                            <option value="draft">مسودة (Draft)</option>
+                            <option value="inactive">معطل (Inactive)</option>
+                        </select>
+                    </div>
+
+                    <!-- Media Uploads -->
+                    <div class="col-12 mt-3">
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-1"><i class="ti ti-photo me-1"></i>الشعار وصور المعرض</h6>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold fs-7">شعار العقار (Logo)</label>
@@ -532,18 +653,53 @@
                         <label class="form-label fw-semibold fs-7">صور المعرض (Gallery)</label>
                         <input type="file" name="images[]" multiple class="form-control" accept="image/*">
                     </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold fs-7">حالة العقار</label>
-                        <select name="status" class="form-select">
-                            <option value="active">نشط</option>
-                            <option value="pending">قيد الموافقة</option>
-                            <option value="inactive">معطل</option>
-                        </select>
+
+                    <!-- Custom Settings Override Switch -->
+                    <div class="col-12 mt-3">
+                        <div class="card bg-light-subtle border p-3">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="has_custom_settings" value="1" id="modalHasCustomSettings" onchange="document.getElementById('modalCustomSettingsDiv').style.display = this.checked ? 'block' : 'none';">
+                                <label class="form-check-label fw-bold" for="modalHasCustomSettings">تخصيص سياسات وإعدادات خاصة بهذا العقار (Override Org Defaults)</label>
+                            </div>
+
+                            <div id="modalCustomSettingsDiv" style="display: none;" class="pt-3 border-top mt-2">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fs-7 fw-semibold">وقت تسجيل الدخول (Check-In Time)</label>
+                                        <input type="time" name="check_in_time" class="form-control" value="14:00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fs-7 fw-semibold">وقت تسجيل المغادرة (Check-Out Time)</label>
+                                        <input type="time" name="check_out_time" class="form-control" value="11:00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fs-7 fw-semibold">سياسة الإلغاء (بالعربي)</label>
+                                        <input type="text" name="cancellation_policy_ar" class="form-control" value="مرنة - إلغاء مجاني حتى 24 ساعة">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fs-7 fw-semibold">سياسة الإلغاء (بالإنجليزي)</label>
+                                        <input type="text" name="cancellation_policy_en" class="form-control" value="Flexible - Free cancellation up to 24h">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" name="allow_instant_booking" value="1" id="modalInstantBooking" checked>
+                                            <label class="form-check-label fs-7 fw-semibold" for="modalInstantBooking">السماح بالحجز الفوري المباشر (Instant Booking)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" name="requires_id_verification" value="1" id="modalIdVerify">
+                                            <label class="form-check-label fs-7 fw-semibold" for="modalIdVerify">يتطلب التحقق من الهوية الشخصية</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary-custom">إضافة العقار</button>
+                    <button type="submit" class="btn btn-primary-custom px-4">إضافة العقار</button>
                 </div>
             </form>
         </div>
@@ -625,6 +781,41 @@
                         }
                     });
                 }
+            }
+
+            // Neighborhood & Country Sync for Add Property Modal
+            const modalCountrySelect = document.getElementById('modal_country_id');
+            const modalCitySelect = document.getElementById('modal_city_id');
+            const modalNeighSelect = document.getElementById('modal_neighborhood_id');
+
+            if (modalCitySelect) {
+                modalCitySelect.addEventListener('change', function() {
+                    const cityId = this.value;
+                    const selectedOpt = this.options[this.selectedIndex];
+                    const countryId = selectedOpt ? selectedOpt.getAttribute('data-country-id') : null;
+
+                    if (countryId && modalCountrySelect) {
+                        modalCountrySelect.value = countryId;
+                    }
+
+                    if (modalNeighSelect) {
+                        modalNeighSelect.innerHTML = '<option value="">اختر الحي...</option>';
+                        if (!cityId) return;
+
+                        fetch(`/api/v1/neighborhoods?city_id=${cityId}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (Array.isArray(data)) {
+                                    data.forEach(item => {
+                                        const opt = document.createElement('option');
+                                        opt.value = item.id;
+                                        opt.textContent = item.name_ar || item.name_en;
+                                        modalNeighSelect.appendChild(opt);
+                                    });
+                                }
+                            }).catch(err => console.error("Error loading neighborhoods:", err));
+                    }
+                });
             }
         });
     </script>

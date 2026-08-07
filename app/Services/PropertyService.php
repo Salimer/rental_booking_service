@@ -20,20 +20,51 @@ class PropertyService
                 $q->where('status', 'active');
             });
 
-        if (! empty($filters['city_id'])) {
-            $query->where('city_id', $filters['city_id']);
+        $cityId = $filters['city_id'] ?? $filters['rental_city_id'] ?? $filters['city'] ?? null;
+        if (! empty($cityId)) {
+            if (is_numeric($cityId)) {
+                $query->where('city_id', (int) $cityId);
+            } else {
+                $query->whereHas('city', function (Builder $q) use ($cityId) {
+                    $q->where('name_en', 'like', "%{$cityId}%")
+                      ->orWhere('name_ar', 'like', "%{$cityId}%");
+                });
+            }
         }
 
-        if (! empty($filters['country_id'])) {
-            $query->where('country_id', $filters['country_id']);
+        $countryId = $filters['country_id'] ?? $filters['rental_country_id'] ?? null;
+        if (! empty($countryId)) {
+            $query->where('country_id', $countryId);
         }
 
-        if (! empty($filters['neighborhood_id'])) {
-            $query->where('neighborhood_id', $filters['neighborhood_id']);
+        $neighborhoodId = $filters['neighborhood_id'] ?? $filters['rental_neighborhood_id'] ?? null;
+        if (! empty($neighborhoodId)) {
+            $query->where('neighborhood_id', $neighborhoodId);
         }
 
-        if (! empty($filters['type_id'])) {
-            $query->where('type_id', $filters['type_id']);
+        $typeId = $filters['type_id'] ?? $filters['rental_type_id'] ?? null;
+        if (! empty($typeId)) {
+            $query->where('type_id', $typeId);
+        }
+
+        if (! empty($filters['min_rating'])) {
+            $query->where('avg_rating', '>=', (float) $filters['min_rating']);
+        }
+
+        if (! empty($filters['has_discount'])) {
+            $hasDiscount = (bool) $filters['has_discount'];
+            if ($hasDiscount) {
+                $today = now()->toDateString();
+                $query->where(function (Builder $q) use ($today) {
+                    $q->whereHas('coupons', function (Builder $cQ) use ($today) {
+                        $cQ->where('status', 1)
+                           ->where('start_date', '<=', $today)
+                           ->where('expire_date', '>=', $today);
+                    })->orWhereHas('org.settings', function (Builder $sQ) {
+                        $sQ->where('free_night_enabled', 1);
+                    });
+                });
+            }
         }
 
         if (! empty($filters['search'])) {
@@ -46,14 +77,29 @@ class PropertyService
             });
         }
 
-        if (! empty($filters['min_price']) || ! empty($filters['max_price'])) {
-            $query->whereHas('units', function (Builder $q) use ($filters) {
-                if (! empty($filters['min_price'])) {
-                    $q->where('base_price', '>=', $filters['min_price']);
-                }
-                if (! empty($filters['max_price'])) {
-                    $q->where('base_price', '<=', $filters['max_price']);
-                }
+        if (! empty($filters['min_price'])) {
+            $minPrice = (float) $filters['min_price'];
+            $query->whereHas('units.prices', function (Builder $q) use ($minPrice) {
+                $q->where('price_type', 'default')
+                  ->where(function (Builder $sub) use ($minPrice) {
+                      $sub->where('price_sar', '>=', $minPrice)
+                          ->orWhere('price_yer_s', '>=', $minPrice)
+                          ->orWhere('price_yer_n', '>=', $minPrice)
+                          ->orWhere('price_usd', '>=', $minPrice);
+                  });
+            });
+        }
+
+        if (! empty($filters['max_price'])) {
+            $maxPrice = (float) $filters['max_price'];
+            $query->whereHas('units.prices', function (Builder $q) use ($maxPrice) {
+                $q->where('price_type', 'default')
+                  ->where(function (Builder $sub) use ($maxPrice) {
+                      $sub->where('price_sar', '<=', $maxPrice)
+                          ->orWhere('price_yer_s', '<=', $maxPrice)
+                          ->orWhere('price_yer_n', '<=', $maxPrice)
+                          ->orWhere('price_usd', '<=', $maxPrice);
+                  });
             });
         }
 
